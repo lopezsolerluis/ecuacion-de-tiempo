@@ -1,0 +1,56 @@
+(ns lopezsolerluis.ecuaciones)
+
+(defn sin [alpha]
+  (.sin js/Math alpha))
+
+(defn cos [alpha]
+  (.cos js/Math alpha))
+
+(defn tan [alpha]
+  (.tan js/Math alpha))
+
+(defn atan
+  ([x] (.atan js/Math x))
+  ([x y] (.atan2 js/Math x y)))
+
+(defn abs [x]
+  (.abs js/Math x))
+
+(defn sqrt [x]
+  (.sqrt js/Math x))
+
+(def pi (.-PI js/Math))
+
+(defn ecuacion-de-kepler
+  "Resuelve la ecuación de Kepler por aproximaciones sucesivas. El resultado está en radianes"
+  ([anomalia-media excentricidad]
+   (ecuacion-de-kepler anomalia-media excentricidad 1e-9 anomalia-media))
+  ([anomalia-media excentricidad tolerancia anomalia-excentrica]
+   (let [nueva-anomalia-excentrica
+         (+ anomalia-media (* excentricidad (sin anomalia-excentrica)))]
+     (if (<= (abs (- anomalia-excentrica nueva-anomalia-excentrica))
+             tolerancia)
+       nueva-anomalia-excentrica
+       (recur anomalia-media excentricidad tolerancia nueva-anomalia-excentrica)))))
+
+(defn ecuacion-anomalia-verdadera [anomalia-excentrica excentricidad]
+  "El resultado está en radianes" 
+  (mod (* 2 (atan (* (sqrt (/ (+ 1 excentricidad) (- 1 excentricidad)))
+                     (tan (/ anomalia-excentrica 2)))))
+       (* 2 pi)))
+
+(defn ecuacion-de-centro [anomalia-media excentricidad]
+  (let [anomalia-verdadera (ecuacion-anomalia-verdadera
+                            (ecuacion-de-kepler anomalia-media excentricidad)
+                            excentricidad)]
+    (- anomalia-media anomalia-verdadera)))
+
+(defn proyeccion-al-ecuador [longitud-ecliptica inclinacion]
+  (mod (atan (* (sin longitud-ecliptica) (cos inclinacion)) 
+	     (cos longitud-ecliptica))
+       (* 2 pi)))
+	
+(defn reduccion-al-ecuador [longitud-ecliptica inclinacion]
+  (- longitud-ecliptica (proyeccion-al-ecuador longitud-ecliptica inclinacion)))
+
+
