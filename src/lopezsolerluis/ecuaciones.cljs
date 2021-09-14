@@ -34,6 +34,25 @@
 (defn mod-2pi [n]
   (mod n (* 2 pi)))
 
+(defn inflexion? [previos actual]
+  (let [ys-previos (mapv :y previos)
+        ys (conj ys-previos (:y actual))]
+    (not (or (apply <= ys)
+             (apply >= ys)))))
+
+(defn extremos
+  "Calcula los extremos de una serie de datos"
+  [data]
+  (:extrema
+    (reduce (fn [{:keys [lasts extrema] :as accum} dato]
+              (if (inflexion? lasts dato)
+                (-> accum
+                    (update :extrema conj (last lasts))
+                    (assoc :lasts [(last lasts) dato]))
+                (update accum :lasts conj dato)))
+          {:lasts (take-last 5 data) :extrema []}
+          data)))
+
 (defn dia-del-anio [dia mes]
   (let [milisegundos (.getTime (js/Date. 1970 (- mes 1) (+ dia 1)))]
     (floor (/ milisegundos 1000 3600 24))))
@@ -138,8 +157,3 @@
         e-centro (ecuacion-de-centro anom-med excentricidad)
         r-ecuador (reduccion-al-ecuador longitud inclinacion)]
     (rad->ms (+ e-centro r-ecuador))))
-
-(def ecuacion-de-centro-ms (comp rad->ms ecuacion-de-centro))
-
-(def anio-tropico 365.2425)
-(def inclinacion 23.5)

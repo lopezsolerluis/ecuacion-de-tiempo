@@ -49,12 +49,6 @@
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
     (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
 
-(defn extremos
-  "Calcula los extremos de una función"
-  [data]
-  (reduce (fn [{:keys [acum last2]} dato])
-   data
-   {:last-2 (take-last 2 data)}))
 
 
 ; (defn leer-slider [slider]
@@ -89,6 +83,8 @@
                         :style line-style}]
    [:> rvis/LineSeries {:data data3 :strokeWidth 2 :stroke color3
                         :style line-style}]])
+
+(def extre (ecu/extremos (:data-ecuacion-tiempo @ecuaciones)))
 
 (defn graph []
   [:div.graph

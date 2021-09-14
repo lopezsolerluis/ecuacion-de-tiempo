@@ -3,7 +3,7 @@
      [cljs.test :refer-macros [deftest is are testing]]
      [lopezsolerluis.ecuaciones :refer [sin cos ecuacion-de-kepler
                                         anomalia-verdadera ecuacion-de-centro
-                                        reduccion-al-ecuador]]))
+                                        reduccion-al-ecuador inflexion?]]))
 
 (defn to-deg [x]
   (* x 180 (/ (.-PI js/Math))))
@@ -68,3 +68,14 @@
       ;                        resultado)))
       (= (to-deg (reduccion-al-ecuador (to-rad longitud-ecliptica) (to-rad inclinacion))) resultado)
       270 23 0))
+
+(deftest inflexion?-test
+  (are [previos actual resultado]
+    (= (inflexion? previos actual) resultado)
+    [{:y 0} {:y 1}] {:y 2} false
+    [{:y 0} {:y 1}] {:y 0} true
+    [{:y 0} {:y -1}] {:y 2} true
+    [{:y 0} {:y -1}] {:y -2} false
+    [{:y 0} {:y 10}] {:y 20} false
+    [{:y 0} {:y 1} {:y 1} {:y 1}] {:y 0} true
+    [{:y 10} {:y 1}] {:y 2} true))
