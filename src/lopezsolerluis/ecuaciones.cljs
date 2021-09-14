@@ -46,11 +46,11 @@
   (:extrema
     (reduce (fn [{:keys [lasts extrema] :as accum} dato]
               (if (inflexion? lasts dato)
-                (-> accum
-                    (update :extrema conj (last lasts))
-                    (assoc :lasts [(last lasts) dato]))
-                (update accum :lasts conj dato)))
-          {:lasts (take-last 5 data) :extrema []}
+                  (-> accum
+                      (update :extrema conj (last lasts))
+                      (assoc :lasts [(last lasts) dato]))
+                  (update accum :lasts conj dato)))
+          {:lasts (subvec data (- (count data) 5)) :extrema []}
           data)))
 
 (defn dia-del-anio [dia mes]

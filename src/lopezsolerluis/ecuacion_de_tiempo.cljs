@@ -21,7 +21,7 @@
    (mapv (fn [t]
           (let [tt (* t delta-t)]
             {:x (ecu/dia->ms tt) :y (fun tt)}))
-       (range (/ anio delta-t)))))
+       (range (dec (/ anio delta-t))))))
 
 (defn calcular-ecuacion-tiempo [datos-centro datos-reduccion]
   (mapv (fn [{x1 :x y1 :y} {x2 :x y2 :y}]
@@ -56,8 +56,6 @@
           (assoc (if (= ecu/ecuacion-de-centro ecuacion) :data-centro-extremos :data-reduccion-extremos) extremos-nuevos)
           (assoc :data-ecuacion-tiempo-extremos (ecu/extremos datos-ecuacion-tiempo)))))
 
-; (defn leer-slider [slider]
-;   (js/parseFloat (.-value slider)))
 
 (defn get-app-element []
   (gdom/getElement "app"))
@@ -78,8 +76,8 @@
    [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
    [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
                                  :orientation "horizontal"
-                                 :colors [color1 color2 color3]
-                                 :items [" Ecuación de Tiempo"
+                                 ;;:colors [color1 color2 color3]
+                                 :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 15}
                                          " Ecuación de Centro"
                                          " Reducción al Ecuador"]}]
    [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
