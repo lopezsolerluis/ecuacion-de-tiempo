@@ -90,7 +90,7 @@
                                  :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 15}
                                          " Ecuación de Centro"
                                          " Reducción al Ecuador"]}]
-   [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
+   [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1 
                         :style line-style}]
    [:> rvis/MarkSeries {:data data1-extremos :stroke color1 :size 5
                         :fill color1 :opacity (:opacidad @ecuaciones)}]
