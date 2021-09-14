@@ -20,7 +20,7 @@
   ([fun delta-t anio]
    (mapv (fn [t]
           (let [tt (* t delta-t)]
-            {:x (ecu/dia->ms tt) :y (/ (fun tt) 1000)}))
+            {:x (ecu/dia->ms tt) :y (fun tt)}))
        (range (/ anio delta-t)))))
 
 (defn calcular-ecuacion-tiempo [datos-centro datos-reduccion]
@@ -60,13 +60,15 @@
                  :text {:stroke "none"
                         :fill "#333"}})
 
+(def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
+
 (defn line-chart [[data1 color1] [data2 color2] [data3 color3]]
   [:> rvis/XYPlot
-   {:width 1500 :height 700 :margin {:left 150 :right 50} :xType "time" :yType "time-utc"}
+   {:width 1500 :height 700 :margin {:left 150 :right 50} :xType "time-utc" :yType "time-utc"}
    [:> rvis/VerticalGridLines {:style axis-style}]
    [:> rvis/HorizontalGridLines {:style axis-style}]
-   [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style}]
-   [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms (* % 1000))}]
+   [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
+   [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
    [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
                                  :orientation "horizontal"
                                  :colors [color1 color2 color3]
@@ -74,11 +76,11 @@
                                          " Ecuación de Centro"
                                          " Reducción al Ecuador"]}]
    [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
-                        :style {:fill "none"}}]
-   [:> rvis/LineSeries {:data data2 :stroke color2
-                        :style {:fill "none"}}]
-   [:> rvis/LineSeries {:data data3 :stroke color3
-                        :style {:fill "none"}}]])
+                        :style line-style}]
+   [:> rvis/LineSeries {:data data2 :strokeWidth 2 :stroke color2
+                        :style line-style}]
+   [:> rvis/LineSeries {:data data3 :strokeWidth 2 :stroke color3
+                        :style line-style}]])
 
 (defn graph []
   [:div.graph
@@ -88,7 +90,7 @@
 
 (defn slider-inclinacion []
   [:div
-   [:label "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "º"]
+   [:label "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "°"]
    [:input {:type "range" :defaultValue (ecu/deg @inclinacion) :min 0 :max 89.99 :step 0.01 :id "slider-inclinacion"
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
@@ -144,6 +146,3 @@
 ;; specify reload hook with ^;after-load metadata
 (defn ^:after-load on-reload []
   (mount-app-element))
-
-;;(set! (.-value label-inclinacion) 1)
-   ;;(str "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "º"))

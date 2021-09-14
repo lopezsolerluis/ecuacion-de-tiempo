@@ -41,12 +41,19 @@
 (def meses ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio" "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"])
 
 (defn getDate
-  "Recibe un día (de 1 a 365) y devuelve una cadena 'dia/mes'"
+  "Recibe un día (de 1 a 365) y devuelve una cadena 'dia de mes'"
   [dia]
   (let [fecha (js/Date. 1970 0 dia)
         mes (get meses (.getMonth fecha))
         dia (.getDate fecha)]
    (str dia " de " mes)))
+
+(defn ms->mes
+  "Recibe un día en milisegundos desde el 1 de Enero y devuelve una cadena 'mes'"
+  [ms]
+  (let [dia (/ ms 86400000)
+        fecha (js/Date. 1970 0 (inc dia))]
+   (get meses (.getMonth fecha))))
 
 (defn dia->ms [d]
   (* d 86400000)) ;; 1 día son 86400000 milisegundos
