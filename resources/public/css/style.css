@@ -1,10 +1,28 @@
 /* some style */
 .graph {
   /* background-color: #eafaf1; */
+  height: 80vh;
 }
 
 input {
-  width: 100%;
+   width: 100%;
+}
+
+.valor {
+  font-weight: bold;
+}
+.centro {
+  background-color: inherit;
+  color: "green";
+}
+
+.medio {
+  width: 48%;
+  /* padding-left: 10px; */
+  margin-left: 1%;
+  margin-right: 1%;
+  display: inline-block;
+  /* background-color: #dddddd; */
 }
 
 .rv-xy-plot__grid-lines__line {

@@ -53,11 +53,11 @@
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
     (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
 
-<<<<<<< HEAD
+
 
 ; (defn leer-slider [slider]
 ;   (js/parseFloat (.-value slider)))
-=======
+
 (defn actualizar-extremos
   "'data-tipo' es :data-centro o data-reduccion"
   [data-tipo]
@@ -65,7 +65,6 @@
     (-> @ecuaciones
       (assoc (if (= :data-centro data-tipo) :data-centro-extremos :data-reduccion-extremos) extremos-nuevos)
       (assoc :data-ecuacion-tiempo-extremos (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))))
->>>>>>> extremos
 
 (defn get-app-element []
   (gdom/getElement "app"))
@@ -78,19 +77,18 @@
 (def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
 
 (defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
-  [:> rvis/XYPlot
-   {:width 1500 :height 700 :margin {:left 150 :right 50} :xType "time-utc" :yType "time-utc"}
+  [:> rvis/FlexibleXYPlot
+   { :margin {:left 150 :right 50} :xType "time-utc" :yType "time-utc"}
    [:> rvis/VerticalGridLines {:style axis-style}]
    [:> rvis/HorizontalGridLines {:style axis-style}]
    [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
    [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
    [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
                                  :orientation "horizontal"
-                                 ;;:colors [color1 color2 color3]
                                  :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 15}
-                                         " Ecuación de Centro"
-                                         " Reducción al Ecuador"]}]
-   [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1 
+                                         {:title " Reducción al Ecuador" :color color3 :strokeWidth 15}
+                                         {:title " Ecuación de Centro"  :color color2 :strokeWidth 15}]}]
+   [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
                         :style line-style}]
    [:> rvis/MarkSeries {:data data1-extremos :stroke color1 :size 5
                         :fill color1 :opacity (:opacidad @ecuaciones)}]
@@ -103,18 +101,21 @@
    [:> rvis/MarkSeries {:data data3-extremos :stroke color3 :size 3
                         :fill color3 :opacity (:opacidad @ecuaciones)}]])
 
+(def color-centro "green")
+(def color-proyeccion "blue")
+
 (defn graph []
   [:div.graph
    [line-chart [(:data-ecuacion-tiempo @ecuaciones) "red"]
                (:data-ecuacion-tiempo-extremos @ecuaciones)
-               [(:data-centro @ecuaciones) "blue"]
-               (:data-centro-extremos @ecuaciones)
-               [(:data-reduccion @ecuaciones) "green"]
-               (:data-reduccion-extremos @ecuaciones) "green"]])
+               [(:data-centro @ecuaciones) color-centro]
+               (:data-centro-extremos @ecuaciones color-centro)
+               [(:data-reduccion @ecuaciones) color-proyeccion]
+               (:data-reduccion-extremos @ecuaciones) color-proyeccion]])
 
 (defn slider-inclinacion []
   [:div
-   [:label "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "°"]
+   [:label.valor "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "°"]
    [:input {:type "range" :defaultValue (ecu/deg @inclinacion) :min 0 :max 89.99 :step 0.01 :id "slider-inclinacion"
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
@@ -126,7 +127,7 @@
 
 (defn slider-excentricidad []
   [:div
-   [:label "Excentricidad: " (.toFixed @excentricidad 3)]
+   [:label.valor "Excentricidad: " (.toFixed @excentricidad 3)]
    [:input {:type "range" :defaultValue @excentricidad :min 0 :max 0.999 :step 0.001 :id "slider-excentricidad"
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
@@ -138,7 +139,7 @@
 
 (defn slider-equinoccio-marzo []
   [:div
-   [:label "Equinoccio del punto Vernal: " (ecu/getDate @equinoccio-marzo)]
+   [:label.valor "Equinoccio del punto Vernal: " (ecu/getDate @equinoccio-marzo)]
    [:input {:type "range" :defaultValue @equinoccio-marzo :min 1 :max 365 :step 1 :id "slider-equinoccio-marzo"
             :onInput (fn [e]
                        (let [valor (js/parseInt (.. e -target -value))]
@@ -150,7 +151,7 @@
 
 (defn slider-perihelio []
   [:div
-   [:label "Perihelio: " (ecu/getDate @perihelio)]
+   [:label.valor "Perihelio: " (ecu/getDate @perihelio)]
    [:input {:type "range" :defaultValue @perihelio :min 1 :max 365 :step 1 :id "slider-perihelio"
             :onInput (fn [e]
                        (let [valor (js/parseInt (.. e -target -value))]
@@ -162,15 +163,19 @@
 
 (defn sliders []
   [:div
-   [slider-inclinacion]
-   [slider-excentricidad]
-   [slider-equinoccio-marzo]
-   [slider-perihelio]])
+    [:span.medio {:style {:color color-proyeccion}}
+      [slider-inclinacion]
+      [slider-equinoccio-marzo]]
+    [:span.medio {:style {:color color-centro}}
+      [slider-excentricidad]
+      [slider-perihelio]]])
 
 (defn app []
   [:div
-    [graph]
-    [sliders]])
+    [:div.graph
+      [graph]]
+    [:div.form
+      [sliders]]])
 
 (defn mount [el]
   (rdom/render [app] el))
