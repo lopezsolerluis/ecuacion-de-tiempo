@@ -29,7 +29,7 @@
         datos-centro datos-reduccion))
 
 (defn calcular-ecuacion [ecuacion fase parametro]
-  (crear-datos (fn [t] (-> (ecu/anomalia-media (- t fase) anio)
+  (crear-datos (fn [t] (-> (ecu/anomalia-media (- t fase -1) anio)
                            (ecuacion parametro)))))
 
 (defn calcular-ecuaciones []
@@ -41,37 +41,17 @@
         (assoc :data-reduccion datos-reduccion)
         (assoc :data-ecuacion-tiempo datos-ecuacion-tiempo))))
 
-(defn actualizar-ecuacion [ecuaciones ecuacion fase parametro]
+(def ecuaciones (r/atom (calcular-ecuaciones)))
+
+(defn actualizar-ecuacion [ecuacion fase parametro]
   (let [datos-nuevos (calcular-ecuacion ecuacion fase parametro)
-        ecuaciones-nuevas (assoc ecuaciones (if (= ecu/ecuacion-de-centro ecuacion) :data-centro :data-reduccion) datos-nuevos)
+        ecuaciones-nuevas (assoc @ecuaciones (if (= ecu/ecuacion-de-centro ecuacion) :data-centro :data-reduccion) datos-nuevos)
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
     (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
 
-(def ecuaciones (r/atom (calcular-ecuaciones)))
+; (defn leer-slider [slider]
+;   (js/parseFloat (.-value slider)))
 
-(defn leer-slider [slider]
-  (js/parseFloat (.-value slider)))
-
-(def slider-inclinacion (gdom/getElement "slider-inclinacion"))
-(def slider-excentricidad (gdom/getElement "slider-excentricidad"))
-(def label-inclinacion (gdom/getElement "label-inclinacion"))
-(def label-excentricidad (gdom/getElement "label-excentricidad"))
-
-
-
-(gevents/listen slider-inclinacion "input" (fn [] (let [valor (leer-slider slider-inclinacion)]
-                                                      (gdom/setTextContent label-inclinacion
-                                                         (str "Inclinación: " (.toFixed valor 2) "º"))
-                                                      (reset! inclinacion (ecu/rad valor))
-                                                      (reset! ecuaciones (actualizar-ecuacion @ecuaciones
-                                                                          ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion)))))
-
-(gevents/listen slider-excentricidad "input" (fn [] (let [valor (leer-slider slider-excentricidad)]
-                                                       (gdom/setTextContent label-excentricidad
-                                                          (str "Excentricidad: " (.toFixed valor 3)))
-                                                       (reset! excentricidad valor)
-                                                       (reset! ecuaciones (actualizar-ecuacion @ecuaciones
-                                                                           ecu/ecuacion-de-centro @perihelio @excentricidad)))))
 (defn get-app-element []
   (gdom/getElement "app"))
 
@@ -106,17 +86,46 @@
                [(:data-centro @ecuaciones) "blue"]
                [(:data-reduccion @ecuaciones) "green"]]])
 
-(defn slider []
+(defn slider-inclinacion []
   [:div
-   [:label {:for "incli"} "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "º"]
-   [:input {:type "range" :defaultValue (ecu/deg @inclinacion) :min 0 :max 89.999 :id "slider-inclinacion-nuevo"
+   [:label "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "º"]
+   [:input {:type "range" :defaultValue (ecu/deg @inclinacion) :min 0 :max 89.99 :step 0.01 :id "slider-inclinacion"
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
-                         (reset! inclinacion (ecu/rad valor))))}]])
+                         (reset! inclinacion (ecu/rad valor))
+                         (reset! ecuaciones (actualizar-ecuacion ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))}]])
+(defn slider-excentricidad []
+  [:div
+   [:label "Excentricidad: " (.toFixed @excentricidad 3)]
+   [:input {:type "range" :defaultValue @excentricidad :min 0 :max 0.999 :step 0.001 :id "slider-excentricidad"
+            :onInput (fn [e]
+                       (let [valor (js/parseFloat (.. e -target -value))]
+                         (reset! excentricidad valor)
+                         (reset! ecuaciones (actualizar-ecuacion ecu/ecuacion-de-centro @perihelio @excentricidad))))}]])
+(defn slider-equinoccio-marzo []
+  [:div
+   [:label "Equinoccio del punto Vernal: " (ecu/getDate @equinoccio-marzo)]
+   [:input {:type "range" :defaultValue @equinoccio-marzo :min 1 :max 365 :step 1 :id "slider-equinoccio-marzo"
+            :onInput (fn [e]
+                       (let [valor (js/parseInt (.. e -target -value))]
+                         (reset! equinoccio-marzo valor)
+                         (reset! ecuaciones (actualizar-ecuacion ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))}]])
+
+(defn slider-perihelio []
+  [:div
+   [:label "Perihelio: " (ecu/getDate @perihelio)]
+   [:input {:type "range" :defaultValue @perihelio :min 1 :max 365 :step 1 :id "slider-perihelio"
+            :onInput (fn [e]
+                       (let [valor (js/parseInt (.. e -target -value))]
+                         (reset! perihelio valor)
+                         (reset! ecuaciones (actualizar-ecuacion ecu/ecuacion-de-centro @perihelio @excentricidad))))}]])
 
 (defn sliders []
   [:div
-   [slider]])
+   [slider-inclinacion]
+   [slider-excentricidad]
+   [slider-equinoccio-marzo]
+   [slider-perihelio]])
 
 (defn app []
   [:div
