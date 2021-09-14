@@ -49,6 +49,7 @@
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
     (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
 
+
 ; (defn leer-slider [slider]
 ;   (js/parseFloat (.-value slider)))
 
@@ -76,7 +77,7 @@
                                          " Ecuación de Centro"
                                          " Reducción al Ecuador"]}]
    [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
-                        :style line-style}]
+                          :style line-style}]
    [:> rvis/LineSeries {:data data2 :strokeWidth 2 :stroke color2
                         :style line-style}]
    [:> rvis/LineSeries {:data data3 :strokeWidth 2 :stroke color3

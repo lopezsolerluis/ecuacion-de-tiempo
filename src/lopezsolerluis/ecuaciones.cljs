@@ -128,7 +128,7 @@
 (defn reduccion-al-ecuador [longitud-ecliptica inclinacion]
   "'longitud-ecliptica' e 'inclinacion' deben estar en radianes.
   El resultado está en milisegundos"
-  (let [proyeccion (proyeccion-al-ecuador longitud-ecliptica inclinacion)]
+  (let [proyeccion (proyeccion-al-ecuador longitud-ecliptica inclinacion)] 
     (rad->ms (- longitud-ecliptica proyeccion))))
 
 (defn ecuacion-de-tiempo
@@ -138,8 +138,3 @@
         e-centro (ecuacion-de-centro anom-med excentricidad)
         r-ecuador (reduccion-al-ecuador longitud inclinacion)]
     (rad->ms (+ e-centro r-ecuador))))
-
-(def ecuacion-de-centro-ms (comp rad->ms ecuacion-de-centro))
-
-(def anio-tropico 365.2425)
-(def inclinacion 23.5)
