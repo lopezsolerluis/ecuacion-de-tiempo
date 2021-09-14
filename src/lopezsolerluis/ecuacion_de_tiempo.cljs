@@ -32,24 +32,29 @@
   (crear-datos (fn [t] (-> (ecu/anomalia-media (- t fase -1) anio)
                            (ecuacion parametro)))))
 
-(defn calcular-ecuaciones []
+(defn calcular-series []
   (let [datos-centro (calcular-ecuacion ecu/ecuacion-de-centro @perihelio @excentricidad)
         datos-reduccion (calcular-ecuacion ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion)
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo datos-centro datos-reduccion)]
     (-> {}
         (assoc :data-centro datos-centro)
         (assoc :data-reduccion datos-reduccion)
-        (assoc :data-ecuacion-tiempo datos-ecuacion-tiempo))))
+        (assoc :data-ecuacion-tiempo datos-ecuacion-tiempo)
+        (assoc :data-centro-extremos (ecu/extremos datos-centro))
+        (assoc :data-reduccion-extremos (ecu/extremos datos-reduccion))
+        (assoc :data-ecuacion-tiempo-extremos (ecu/extremos datos-ecuacion-tiempo)))))
 
-(def ecuaciones (r/atom (calcular-ecuaciones)))
+(def ecuaciones (r/atom (calcular-series)))
 
-(defn actualizar-ecuacion [ecuacion fase parametro]
+(defn actualizar-serie [ecuacion fase parametro]
   (let [datos-nuevos (calcular-ecuacion ecuacion fase parametro)
         ecuaciones-nuevas (assoc @ecuaciones (if (= ecu/ecuacion-de-centro ecuacion) :data-centro :data-reduccion) datos-nuevos)
-        datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
-    (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
-
-
+        datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))
+        extremos-nuevos (ecu/extremos datos-nuevos)]
+      (-> ecuaciones-nuevas
+          (assoc :data-ecuacion-tiempo datos-ecuacion-tiempo)
+          (assoc (if (= ecu/ecuacion-de-centro ecuacion) :data-centro-extremos :data-reduccion-extremos) extremos-nuevos)
+          (assoc :data-ecuacion-tiempo-extremos (ecu/extremos datos-ecuacion-tiempo)))))
 
 ; (defn leer-slider [slider]
 ;   (js/parseFloat (.-value slider)))
@@ -64,7 +69,7 @@
 
 (def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
 
-(defn line-chart [[data1 color1] [data2 color2] [data3 color3]]
+(defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
   [:> rvis/XYPlot
    {:width 1500 :height 700 :margin {:left 150 :right 50} :xType "time-utc" :yType "time-utc"}
    [:> rvis/VerticalGridLines {:style axis-style}]
@@ -79,18 +84,23 @@
                                          " Reducción al Ecuador"]}]
    [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
                           :style line-style}]
+   [:> rvis/MarkSeries {:data data1-extremos :stroke color1 :fill color1 :size 5}]
    [:> rvis/LineSeries {:data data2 :strokeWidth 2 :stroke color2
                         :style line-style}]
+   [:> rvis/MarkSeries {:data data2-extremos :stroke color2 :fill color2 :size 3}]
    [:> rvis/LineSeries {:data data3 :strokeWidth 2 :stroke color3
-                        :style line-style}]])
+                        :style line-style}]
+   [:> rvis/MarkSeries {:data data3-extremos :stroke color3 :fill color3 :size 3}]])
 
-(def extre (ecu/extremos (:data-ecuacion-tiempo @ecuaciones)))
 
 (defn graph []
   [:div.graph
    [line-chart [(:data-ecuacion-tiempo @ecuaciones) "red"]
+               (:data-ecuacion-tiempo-extremos @ecuaciones)
                [(:data-centro @ecuaciones) "blue"]
-               [(:data-reduccion @ecuaciones) "green"]]])
+               (:data-centro-extremos @ecuaciones)
+               [(:data-reduccion @ecuaciones) "green"]
+               (:data-reduccion-extremos @ecuaciones) "green"]])
 
 (defn slider-inclinacion []
   [:div
@@ -99,7 +109,7 @@
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
                          (reset! inclinacion (ecu/rad valor))
-                         (reset! ecuaciones (actualizar-ecuacion ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))}]])
+                         (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))}]])
 (defn slider-excentricidad []
   [:div
    [:label "Excentricidad: " (.toFixed @excentricidad 3)]
@@ -107,7 +117,7 @@
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
                          (reset! excentricidad valor)
-                         (reset! ecuaciones (actualizar-ecuacion ecu/ecuacion-de-centro @perihelio @excentricidad))))}]])
+                         (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))))}]])
 (defn slider-equinoccio-marzo []
   [:div
    [:label "Equinoccio del punto Vernal: " (ecu/getDate @equinoccio-marzo)]
@@ -115,7 +125,7 @@
             :onInput (fn [e]
                        (let [valor (js/parseInt (.. e -target -value))]
                          (reset! equinoccio-marzo valor)
-                         (reset! ecuaciones (actualizar-ecuacion ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))}]])
+                         (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))}]])
 
 (defn slider-perihelio []
   [:div
@@ -124,7 +134,7 @@
             :onInput (fn [e]
                        (let [valor (js/parseInt (.. e -target -value))]
                          (reset! perihelio valor)
-                         (reset! ecuaciones (actualizar-ecuacion ecu/ecuacion-de-centro @perihelio @excentricidad))))}]])
+                         (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))))}]])
 
 (defn sliders []
   [:div
