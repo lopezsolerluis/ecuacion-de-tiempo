@@ -34,6 +34,25 @@
 (defn mod-2pi [n]
   (mod n (* 2 pi)))
 
+(defn inflexion? [previos actual]
+  (let [ys-previos (mapv :y previos)
+        ys (conj ys-previos (:y actual))]
+    (not (or (apply <= ys)
+             (apply >= ys)))))
+
+(defn extremos
+  "Calcula los extremos de una serie de datos"
+  [data]
+  (:extrema
+    (reduce (fn [{:keys [lasts extrema] :as accum} dato]
+              (if (inflexion? lasts dato)
+                  (-> accum
+                      (update :extrema conj (last lasts))
+                      (assoc :lasts [(last lasts) dato]))
+                  (update accum :lasts conj dato)))
+          {:lasts (subvec data (- (count data) 5)) :extrema []}
+          data)))
+
 (defn dia-del-anio [dia mes]
   (let [milisegundos (.getTime (js/Date. 1970 (- mes 1) (+ dia 1)))]
     (floor (/ milisegundos 1000 3600 24))))
