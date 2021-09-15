@@ -91,12 +91,12 @@
    [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
    [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
                                  :orientation "horizontal"
-                                 :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 5}
-                                         {:title " Reducción al Ecuador" :color color3 :strokeWidth 5}
-                                         {:title " Ecuación de Centro"  :color color2 :strokeWidth 5}]}]
+                                 :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 3}
+                                         {:title " Reducción al Ecuador" :color color3 :strokeWidth 3}
+                                         {:title " Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
    (for [item data1-extremos]
      [:> rvis/Hint {:key (:x item) :value item}
-          [:div {:style {:color color1 :opacity (:opacidad @ecuaciones)}}
+          [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
               (ecu/ms->hms (:y item))]])
 
    [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
@@ -114,15 +114,16 @@
 
 (def color-centro "green")
 (def color-proyeccion "blue")
+(def color-ecuacion-tiempo "red")
 
 (defn graph []
   [:div.graph
-   [line-chart [(:data-ecuacion-tiempo @ecuaciones) "red"]
+   [line-chart [(:data-ecuacion-tiempo @ecuaciones) color-ecuacion-tiempo]
                (:data-ecuacion-tiempo-extremos @ecuaciones)
                [(:data-centro @ecuaciones) color-centro]
-               (:data-centro-extremos @ecuaciones color-centro)
+               (:data-centro-extremos @ecuaciones)
                [(:data-reduccion @ecuaciones) color-proyeccion]
-               (:data-reduccion-extremos @ecuaciones) color-proyeccion]])
+               (:data-reduccion-extremos @ecuaciones)]])
 
 (defn slider-inclinacion []
   [:div
@@ -134,7 +135,9 @@
                          (reset! inclinacion (ecu/rad valor))
                          (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))
             :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
-                               (swap! ecuaciones assoc :opacidad 1))}]])
+                               (swap! ecuaciones assoc :opacidad 1))
+            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
+                             (swap! ecuaciones assoc :opacidad 1))}]])
 
 (defn slider-excentricidad []
   [:div
@@ -146,7 +149,9 @@
                          (reset! excentricidad valor)
                          (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))))
             :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
-                               (swap! ecuaciones assoc :opacidad 1))}]])
+                               (swap! ecuaciones assoc :opacidad 1))
+            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
+                             (swap! ecuaciones assoc :opacidad 1))}]])
 
 (defn slider-equinoccio-marzo []
   [:div
@@ -158,7 +163,9 @@
                          (reset! equinoccio-marzo valor)
                          (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))
             :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
-                              (swap! ecuaciones assoc :opacidad 1))}]])
+                              (swap! ecuaciones assoc :opacidad 1))
+            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
+                            (swap! ecuaciones assoc :opacidad 1))}]])
 
 (defn slider-perihelio []
   [:div
@@ -170,7 +177,9 @@
                          (reset! perihelio valor)
                          (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))))
             :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
-                               (swap! ecuaciones assoc :opacidad 1))}]])
+                               (swap! ecuaciones assoc :opacidad 1))
+            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
+                             (swap! ecuaciones assoc :opacidad 1))}]])
 
 (defn sliders []
   [:div
@@ -196,7 +205,6 @@
     (mount el)))
 
 (mount-app-element)
-
 
 ;; specify reload hook with ^;after-load metadata
 (defn ^:after-load on-reload []
