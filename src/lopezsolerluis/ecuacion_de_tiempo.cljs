@@ -84,20 +84,21 @@
 
 (defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
   [:> rvis/FlexibleXYPlot
-   {:height 700 :margin {:left 150 :right 50} :xType "time-utc" :yType "time-utc"}
+   {:margin {:left 150 :right 50} :xType "time-utc" :yType "time-utc"}
    [:> rvis/VerticalGridLines {:style axis-style}]
    [:> rvis/HorizontalGridLines {:style axis-style}]
    [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
    [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
    [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
                                  :orientation "horizontal"
-                                 :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 15}
-                                         {:title " Reducción al Ecuador" :color color3 :strokeWidth 15}
-                                         {:title " Ecuación de Centro"  :color color2 :strokeWidth 15}]}]
-   (for [i data2-extremos]
-     [:> rvis/Hint {:value i}
-             [:div {:style {:color color1}} (ecu/ms->hms (:y i))]])
-   
+                                 :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 5}
+                                         {:title " Reducción al Ecuador" :color color3 :strokeWidth 5}
+                                         {:title " Ecuación de Centro"  :color color2 :strokeWidth 5}]}]
+   (for [item data1-extremos]
+     [:> rvis/Hint {:key (:x item) :value item}
+          [:div {:style {:color color1 :opacity (:opacidad @ecuaciones)}}
+              (ecu/ms->hms (:y item))]])
+
    [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
                         :style line-style}]
    [:> rvis/MarkSeries {:data data1-extremos :stroke color1 :size 5
