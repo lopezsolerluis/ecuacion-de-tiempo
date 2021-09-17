@@ -85,51 +85,50 @@
 (def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
 
 (defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
-;;  (map (fn [v] (js/Math.abs (:y v))) luis)
-;; (reduce max *1)
-
-  [:> rvis/FlexibleXYPlot
-   {:margin {:left 100 :right 50} :xType "time-utc" :yType "time-utc"}
-   [:> rvis/VerticalGridLines {:style axis-style}]
-   [:> rvis/HorizontalGridLines {:style axis-style}]
-   [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
-   [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
-   [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
-                                 :orientation "horizontal"
-                                 :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 3}
-                                         {:title " Reducción al Ecuador" :color color3 :strokeWidth 3}
-                                         {:title " Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
-   (if (not= 0 @inclinacion @excentricidad)
-    (doall (for [item data1-extremos]
-            ^{:key (str "et" (:x item))} [:> rvis/Hint {:value item}
-                                          [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
-                                              (ecu/ms->hms (:y item))]])))
-   (if (not= 0 @inclinacion)
-    (doall (for [item data3-extremos]
-            ^{:key (str "re" (:x item))} [:> rvis/Hint {:value item}
-                                          [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+  (let [extremo-absoluto-maximo (->> (map (fn [punto] (ecu/abs (:y punto))) data1-extremos)
+                                      (reduce max))]
+    [:> rvis/FlexibleXYPlot
+     {:margin {:left 100 :right 50} :xType "time-utc" :yType "time-utc" :yDomain (if (< extremo-absoluto-maximo 100) [-100,100])}
+     [:> rvis/VerticalGridLines {:style axis-style}]
+     [:> rvis/HorizontalGridLines {:style axis-style}]
+     [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
+     [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
+     [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
+                                   :orientation "horizontal"
+                                   :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 3}
+                                           {:title " Reducción al Ecuador" :color color3 :strokeWidth 3}
+                                           {:title " Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
+     (if (not= 0 @inclinacion @excentricidad)
+      (doall (for [item data1-extremos]
+              ^{:key (str "et" (:x item))} [:> rvis/Hint {:value item}
+                                            [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
                                                 (ecu/ms->hms (:y item))]])))
-   (if (not= 0 @excentricidad)
-     (doall (for [item data2-extremos]
-             ^{:key (str "ec" (:x item))} [:> rvis/Hint {:value item}
-                                           [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
-                                               (ecu/ms->hms (:y item))]])))
+     (if (not= 0 @inclinacion)
+      (doall (for [item data3-extremos]
+              ^{:key (str "re" (:x item))} [:> rvis/Hint {:value item}
+                                            [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+                                                  (ecu/ms->hms (:y item))]])))
+     (if (not= 0 @excentricidad)
+       (doall (for [item data2-extremos]
+               ^{:key (str "ec" (:x item))} [:> rvis/Hint {:value item}
+                                             [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+                                                 (ecu/ms->hms (:y item))]])))
 
-   [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
-                        :style line-style}]
-   (if (not= 0 @inclinacion @excentricidad)
-       [:> rvis/MarkSeries {:data data1-extremos :stroke color1 :size 5
-                            :fill color1 :opacity (:opacidad @ecuaciones)}])
-   [:> rvis/LineSeries {:data data2 :strokeWidth 2 :stroke color2
-                        :style line-style}]
-   (if (not= 0 @excentricidad)
-       [:> rvis/MarkSeries {:data data2-extremos :stroke color2 :size 3
-                            :fill color2 :opacity (:opacidad @ecuaciones)}])
-   [:> rvis/LineSeries {:data data3 :strokeWidth 2 :stroke color3
-                        :style line-style}]
-   (if (not= 0 @inclinacion)
-       [:> rvis/MarkSeries {:data data3-extremos :stroke color3 :size 3
-                            :fill color3 :opacity (:opacidad @ecuaciones)}])])
+     [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
+                          :style line-style}]
+     (if (not= 0 @inclinacion @excentricidad)
+         [:> rvis/MarkSeries {:data data1-extremos :stroke color1 :size 5
+                              :fill color1 :opacity (:opacidad @ecuaciones)}])
+     [:> rvis/LineSeries {:data data2 :strokeWidth 2 :stroke color2
+                          :style line-style}]
+     (if (not= 0 @excentricidad)
+         [:> rvis/MarkSeries {:data data2-extremos :stroke color2 :size 3
+                              :fill color2 :opacity (:opacidad @ecuaciones)}])
+     [:> rvis/LineSeries {:data data3 :strokeWidth 2 :stroke color3
+                          :style line-style}]
+     (if (not= 0 @inclinacion)
+         [:> rvis/MarkSeries {:data data3-extremos :stroke color3 :size 3
+                              :fill color3 :opacity (:opacidad @ecuaciones)}])]))
 
 (def color-centro "green")
 (def color-proyeccion "blue")
