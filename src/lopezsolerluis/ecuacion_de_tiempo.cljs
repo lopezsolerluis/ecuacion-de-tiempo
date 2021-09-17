@@ -63,7 +63,7 @@
 ;   (js/parseFloat (.-value slider)))
 
 (defn actualizar-extremos
-  "'data-tipo' es :data-centro o data-reduccion"
+  "'data-tipo' es :data-centro o :data-reduccion"
   [data-tipo]
   (let [extremos-nuevos (ecu/extremos (data-tipo @ecuaciones))]
     (-> @ecuaciones
@@ -99,20 +99,20 @@
                                          {:title " Reducción al Ecuador" :color color3 :strokeWidth 3}
                                          {:title " Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
    (if (not= 0 @inclinacion @excentricidad)
-    (for [item data1-extremos]
-      [:> rvis/Hint {:key (str "et" (:x item)) :value item}
+    (doall (for [item data1-extremos]
+      ^{:key (str "et" (:x item))} [:> rvis/Hint {:value item}
             [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
-                (ecu/ms->hms (:y item))]]))
+                (ecu/ms->hms (:y item))]])))
     (if (not= 0 @inclinacion)
-     (for [item data3-extremos]
-       [:> rvis/Hint {:key (str "re" (:x item)) :value item}
+     (doall (for [item data3-extremos]
+       ^{:key (str "re" (:x item))} [:> rvis/Hint {:value item}
            [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
-                 (ecu/ms->hms (:y item))]]))
+                 (ecu/ms->hms (:y item))]])))
     (if (not= 0 @excentricidad)
-      (for [item data2-extremos]
-        [:> rvis/Hint {:key (str "ec" (:x item)) :value item}
+      (doall (for [item data2-extremos]
+        ^{:key (str "ec" (:x item))} [:> rvis/Hint {:value item}
             [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
-                (ecu/ms->hms (:y item))]]))
+                (ecu/ms->hms (:y item))]])))
 
    [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
                         :style line-style}]
@@ -207,15 +207,21 @@
       [slider-equinoccio-marzo]]
       [:input {:type "button" :value "Reset" :style {:color color-proyeccion}
                :onClick #((reset! inclinacion inclinacion-terrestre)
+                          (reset! equinoccio-marzo equinoccio-marzo-terrestre)
+                          (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))
+                          (reset! ecuaciones (actualizar-extremos :data-reduccion))
                           ;;(set! (.-defaultValue slider-inclinacion) inclinacion-terrestre)
-                          (reset! equinoccio-marzo equinoccio-marzo-terrestre))}]]
+                          )}]]
     [:span.medio
       [:span {:style {:color color-centro}}
       [slider-excentricidad]
       [slider-perihelio]
       [:input {:type "button" :value "Reset" :style {:color color-centro}
                :onClick #((reset! excentricidad excentricidad-terrestre)
-                          (reset! perihelio perihelio-terrestre))}]]]])
+                          (reset! perihelio perihelio-terrestre))
+                          (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))
+                          (reset! ecuaciones (actualizar-extremos :data-centro))
+                          }]]]])
 
 (defn app []
   [:div
