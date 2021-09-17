@@ -93,7 +93,7 @@
      [:> rvis/HorizontalGridLines {:style axis-style}]
      [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
      [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
-     [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 200 :top 10}
+     [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 120 :top 10}
                                    :orientation "horizontal"
                                    :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 3}
                                            {:title " Reducción al Ecuador" :color color3 :strokeWidth 3}
@@ -209,8 +209,8 @@
              :on-click (fn[] (reset! inclinacion inclinacion-terrestre)
                              (reset! equinoccio-marzo equinoccio-marzo-terrestre)
                              (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))
+                             (set! (.-val slider-inclinacion) inclinacion-terrestre)
                              (reset! ecuaciones (actualizar-extremos :data-reduccion)))}]]
-                        ;;(set! (.-defaultValue slider-inclinacion) inclinacion-terrestre)
 
    [:span.medio
      [:span {:style {:color color-centro}}
@@ -221,7 +221,6 @@
                                 (reset! perihelio perihelio-terrestre)
                                 (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))
                                 (reset! ecuaciones (actualizar-extremos :data-centro)))}]]]])
-
 
 (defn app []
   [:div.todo
