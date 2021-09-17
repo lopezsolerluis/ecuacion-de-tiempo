@@ -5,7 +5,6 @@
    [reagent.core :as r]
    [reagent.dom :as rdom]
    [cljsjs.react-vis :as rvis]
-   ;;["d3-time-format" :refer (timeFormatDefaultLocale)]
    [lopezsolerluis.ecuaciones :as ecu]))
 
 (def anio 365.25)
@@ -19,7 +18,10 @@
 (def equinoccio-marzo (r/atom equinoccio-marzo-terrestre))
 
 (defn crear-datos
-  ([fun] (crear-datos fun 1 anio))
+  ([fun]
+   (mapv (fn [t]
+          {:x (ecu/dia->ms t) :y (fun t)})
+       (range (dec anio))))
   ([fun delta-t] (crear-datos fun delta-t anio))
   ([fun delta-t anio]
    (mapv (fn [t]
@@ -57,10 +59,6 @@
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
     (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
 
-
-
-; (defn leer-slider [slider]
-;   (js/parseFloat (.-value slider)))
 
 (defn actualizar-extremos
   "'data-tipo' es :data-centro o :data-reduccion"
@@ -206,22 +204,22 @@
       [slider-inclinacion]
       [slider-equinoccio-marzo]]
       [:input {:type "button" :value "Reset" :style {:color color-proyeccion}
-               :onClick #((reset! inclinacion inclinacion-terrestre)
-                          (reset! equinoccio-marzo equinoccio-marzo-terrestre)
-                          (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))
-                          (reset! ecuaciones (actualizar-extremos :data-reduccion))
+               :on-click (fn[] (reset! inclinacion inclinacion-terrestre)
+                               (reset! equinoccio-marzo equinoccio-marzo-terrestre)
+                               (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))
+                               (reset! ecuaciones (actualizar-extremos :data-reduccion))
                           ;;(set! (.-defaultValue slider-inclinacion) inclinacion-terrestre)
-                          )}]]
+                               )}]]
     [:span.medio
       [:span {:style {:color color-centro}}
       [slider-excentricidad]
       [slider-perihelio]
       [:input {:type "button" :value "Reset" :style {:color color-centro}
-               :onClick #((reset! excentricidad excentricidad-terrestre)
-                          (reset! perihelio perihelio-terrestre))
-                          (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))
-                          (reset! ecuaciones (actualizar-extremos :data-centro))
-                          }]]]])
+               :on-click (fn[] (reset! excentricidad excentricidad-terrestre)
+                               (reset! perihelio perihelio-terrestre)
+                               (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))
+                               (reset! ecuaciones (actualizar-extremos :data-centro))
+                               )}]]]])
 
 (defn app []
   [:div
