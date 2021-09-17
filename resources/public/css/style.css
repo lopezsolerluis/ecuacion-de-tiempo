@@ -9,6 +9,10 @@ input {
    width: 100%;
 }
 
+input[type="button"] {
+  width: auto;
+}
+
 .valor {
   font-weight: bold;
 }

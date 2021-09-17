@@ -9,10 +9,14 @@
    [lopezsolerluis.ecuaciones :as ecu]))
 
 (def anio 365.25)
-(def inclinacion (r/atom (ecu/rad 23.5)))
-(def excentricidad (r/atom 0.01671))
-(def perihelio (r/atom (ecu/dia-del-anio 4 1)))
-(def equinoccio-marzo (r/atom (ecu/dia-del-anio 21 3)))
+(def inclinacion-terrestre (ecu/rad 23.5))
+(def excentricidad-terrestre 0.01671)
+(def equinoccio-marzo-terrestre (ecu/dia-del-anio 21 3))
+(def perihelio-terrestre (ecu/dia-del-anio 4 1))
+(def inclinacion (r/atom inclinacion-terrestre))
+(def excentricidad (r/atom excentricidad-terrestre))
+(def perihelio (r/atom perihelio-terrestre))
+(def equinoccio-marzo (r/atom equinoccio-marzo-terrestre))
 
 (defn crear-datos
   ([fun] (crear-datos fun 1 anio))
@@ -183,12 +187,20 @@
 
 (defn sliders []
   [:div
-    [:span.medio {:style {:color color-proyeccion}}
+   [:span.medio
+    [:span {:style {:color color-proyeccion}}
       [slider-inclinacion]
       [slider-equinoccio-marzo]]
-    [:span.medio {:style {:color color-centro}}
+      [:input {:type "button" :value "Reset" :style {:color color-proyeccion}
+               :onClick #((reset! inclinacion inclinacion-terrestre)
+                          (reset! equinoccio-marzo equinoccio-marzo-terrestre))}]]
+    [:span.medio
+      [:span {:style {:color color-centro}}
       [slider-excentricidad]
-      [slider-perihelio]]])
+      [slider-perihelio]
+      [:input {:type "button" :value "Reset" :style {:color color-centro}
+               :onClick #((reset! excentricidad excentricidad-terrestre)
+                          (reset! perihelio perihelio-terrestre))}]]]])
 
 (defn app []
   [:div
