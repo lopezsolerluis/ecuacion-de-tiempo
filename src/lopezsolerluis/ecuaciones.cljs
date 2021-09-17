@@ -1,4 +1,7 @@
-(ns lopezsolerluis.ecuaciones)
+(ns lopezsolerluis.ecuaciones
+  (:require
+    [goog.string :as gstring]
+    [goog.string.format]))
 
 (defn sin [alpha]
   (.sin js/Math alpha))
@@ -77,25 +80,21 @@
 (defn dia->ms [d]
   (* d 86400000)) ;; 1 día son 86400000 milisegundos
 
-(defn n->2dig [n]
-  (cond (= n 0) "00"
-        (< n 10) (str 0 n)
-        :else (str n)))
-
 (defn ms->hms [ms]
   (let [ms-abs (abs ms)
         signo (if (< ms 0) "-" "+")
-        milliseconds (floor (/ (mod ms-abs 1000) 10))
+        milliseconds (floor (/ (mod ms-abs 1000) 1))
         seconds (floor (mod (/ ms-abs 1000) 60))
         minutes (floor (mod (/ ms-abs 60000) 60))
         hours (floor (mod (/ ms-abs 3600000) 24))]
+
      (str (if (= 0 hours) "" (str signo hours "h "))
           (if (= 0 hours)
               (if (= 0 minutes) "" (str signo minutes "m "))
-              (str (n->2dig minutes) "m "))
+              (str (gstring/format "%02d" minutes) "m "))
           (if (= 0 hours minutes)
-              (if (= ms 0) "0" (str signo seconds "." (n->2dig milliseconds)))
-              (n->2dig seconds))  "s")))
+              (if (< ms-abs 1) "0" (str signo seconds "." (gstring/format "%03d" milliseconds)))
+              (gstring/format "%02d" seconds))  "s")))
 
     ; var milliseconds = parseInt((duration % 1000) / 100),
     ;     seconds = Math.floor((duration / 1000) % 60),
@@ -147,7 +146,7 @@
 (defn reduccion-al-ecuador [longitud-ecliptica inclinacion]
   "'longitud-ecliptica' e 'inclinacion' deben estar en radianes.
   El resultado está en milisegundos"
-  (let [proyeccion (proyeccion-al-ecuador longitud-ecliptica inclinacion)] 
+  (let [proyeccion (proyeccion-al-ecuador longitud-ecliptica inclinacion)]
     (rad->ms (- longitud-ecliptica proyeccion))))
 
 (defn ecuacion-de-tiempo
