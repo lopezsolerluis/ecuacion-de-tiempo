@@ -85,8 +85,11 @@
 (def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
 
 (defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
+;;  (map (fn [v] (js/Math.abs (:y v))) luis)
+;; (reduce max *1)
+
   [:> rvis/FlexibleXYPlot
-   {:margin {:left 150 :right 50} :xType "time-utc" :yType "time-utc"}
+   {:margin {:left 100 :right 50} :xType "time-utc" :yType "time-utc"}
    [:> rvis/VerticalGridLines {:style axis-style}]
    [:> rvis/HorizontalGridLines {:style axis-style}]
    [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
@@ -198,7 +201,7 @@
                              (swap! ecuaciones assoc :opacidad 1))}]])
 
 (defn sliders []
-  [:div
+  [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
       [slider-inclinacion]
@@ -222,11 +225,9 @@
 
 
 (defn app []
-  [:div
-    [:div.graph
-      [graph]]
-    [:div.form {:id "form"}
-      [sliders]]])
+  [:div.todo
+    [graph]
+    [sliders]])
 
 (defn mount [el]
   (rdom/render [app] el))

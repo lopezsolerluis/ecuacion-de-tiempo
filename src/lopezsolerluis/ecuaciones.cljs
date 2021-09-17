@@ -87,7 +87,6 @@
         seconds (floor (mod (/ ms-abs 1000) 60))
         minutes (floor (mod (/ ms-abs 60000) 60))
         hours (floor (mod (/ ms-abs 3600000) 24))]
-
      (str (if (= 0 hours) "" (str signo hours "h "))
           (if (= 0 hours)
               (if (= 0 minutes) "" (str signo minutes "m "))
