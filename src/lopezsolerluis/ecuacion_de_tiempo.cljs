@@ -100,7 +100,17 @@
                                          {:title " Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
    (if (not= 0 @inclinacion @excentricidad)
     (for [item data1-extremos]
-      [:> rvis/Hint {:key (:x item) :value item}
+      [:> rvis/Hint {:key (str "et" (:x item)) :value item}
+            [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+                (ecu/ms->hms (:y item))]]))
+    (if (not= 0 @inclinacion)
+     (for [item data3-extremos]
+       [:> rvis/Hint {:key (str "re" (:x item)) :value item}
+           [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+                 (ecu/ms->hms (:y item))]]))
+    (if (not= 0 @excentricidad)
+      (for [item data2-extremos]
+        [:> rvis/Hint {:key (str "ec" (:x item)) :value item}
             [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
                 (ecu/ms->hms (:y item))]]))
 

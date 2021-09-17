@@ -11,6 +11,7 @@ input {
 
 input[type="button"] {
   width: auto;
+  font-weight: bold;
 }
 
 .valor {
