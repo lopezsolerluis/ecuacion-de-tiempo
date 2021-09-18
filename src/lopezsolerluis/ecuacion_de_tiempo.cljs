@@ -143,36 +143,21 @@
                [(:data-reduccion @ecuaciones) color-proyeccion]
                (:data-reduccion-extremos @ecuaciones)]])
 
-(defn slider-inclinacion []
+(defn slider
+  [label atom-value fn-value digits label2 min max step id fn-value-2 ecuacion param1 tipo-data]
   [:div
-   [:label.valor "Inclinación: " (.toFixed (ecu/deg @inclinacion) 2) "°"]
-   [:input {:type "range" :defaultValue (ecu/deg @inclinacion) :min 0 :max 89.99 :step 0.01 :id "slider-inclinacion"
+   [:label.valor label (.toFixed (fn-value @atom-value) digits) label2]
+   [:input {:type "range" :defaultValue (fn-value @atom-value) :min min :max max :step step :id id
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
                          (swap! ecuaciones assoc :opacidad 0)
-                         (reset! inclinacion (ecu/rad valor))
-                         (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))
-            :onTouchEnd (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
+                         (reset! atom-value (fn-value-2 valor))
+                         (reset! ecuaciones (actualizar-serie ecuacion @param1 @atom-value))))
+            :onTouchEnd (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
                                 (swap! ecuaciones assoc :opacidad 1))
-            :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
+            :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
                                (swap! ecuaciones assoc :opacidad 1))
-            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
-                             (swap! ecuaciones assoc :opacidad 1))}]])
-
-(defn slider-excentricidad []
-  [:div
-   [:label.valor "Excentricidad: " (.toFixed @excentricidad 3)]
-   [:input {:type "range" :defaultValue @excentricidad :min 0 :max 0.999 :step 0.001 :id "slider-excentricidad"
-            :onInput (fn [e]
-                       (let [valor (js/parseFloat (.. e -target -value))]
-                         (swap! ecuaciones assoc :opacidad 0)
-                         (reset! excentricidad valor)
-                         (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))))
-            :onTouchEnd (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
-                                (swap! ecuaciones assoc :opacidad 1))
-            :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
-                               (swap! ecuaciones assoc :opacidad 1))
-            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
+            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
                              (swap! ecuaciones assoc :opacidad 1))}]])
 
 (defn slider-equinoccio-marzo []
@@ -211,18 +196,20 @@
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
-      [slider-inclinacion]
+      ;;[slider-inclinacion]
+      [slider "Inclinación: " inclinacion ecu/deg 2 "°" 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo :data-reduccion]
       [slider-equinoccio-marzo]]
     [:input {:type "button" :value "Reset" :style {:color color-proyeccion}
              :on-click (fn[] (reset! inclinacion inclinacion-terrestre)
                              (reset! equinoccio-marzo equinoccio-marzo-terrestre)
                              (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))
-                             (set! (.-val slider-inclinacion) inclinacion-terrestre)
+                             ; (set! (.-val slider-inclinacion) inclinacion-terrestre)
                              (reset! ecuaciones (actualizar-extremos :data-reduccion)))}]]
 
    [:span.medio
      [:span {:style {:color color-centro}}
-       [slider-excentricidad]
+       ;;[slider-excentricidad]
+       [slider "Excentricidad: " excentricidad identity 3 "" 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio :data-centro]
        [slider-perihelio]
        [:input {:type "button" :value "Reset" :style {:color color-centro}
                 :on-click (fn[] (reset! excentricidad excentricidad-terrestre)
