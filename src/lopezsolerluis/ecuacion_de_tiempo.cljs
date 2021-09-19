@@ -159,30 +159,25 @@
               :onMouseUp fn-change-end
               :onKeyUp fn-change-end}]]))
 
+(defn boton-reset
+  [color param1 param1-default param2 param2-default ecuacion tipo-data]
+  [:input {:type "button" :value "Reset" :style {:color color}
+           :on-click (fn [] (reset! param1 param1-default)
+                            (reset! param2 param2-default)
+                            (reset! ecuaciones (actualizar-serie ecuacion @param2 @param1))
+                            (reset! ecuaciones (actualizar-extremos tipo-data)))}])
 (defn sliders []
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
       [slider "Inclinación: " inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion :data-reduccion]
       [slider "Equinoccio del punto Vernal: " equinoccio-marzo ecu/getDate false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion :data-reduccion]]
-    [:input {:type "button" :value "Reset" :style {:color color-proyeccion}
-             :on-click (fn[] (reset! inclinacion inclinacion-terrestre)
-                             (reset! equinoccio-marzo equinoccio-marzo-terrestre)
-                             (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))
-                             ; (set! (.-val slider-inclinacion) inclinacion-terrestre)
-                             (reset! ecuaciones (actualizar-extremos :data-reduccion)))}]]
-
+      [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador :data-reduccion]]
    [:span.medio
      [:span {:style {:color color-centro}}
-       ;;[slider-excentricidad]
        [slider "Excentricidad: " excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad :data-centro]
        [slider "Perihelio: " perihelio ecu/getDate false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad :data-centro]
-       ;;[slider-perihelio]
-       [:input {:type "button" :value "Reset" :style {:color color-centro}
-                :on-click (fn[] (reset! excentricidad excentricidad-terrestre)
-                                (reset! perihelio perihelio-terrestre)
-                                (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))
-                                (reset! ecuaciones (actualizar-extremos :data-centro)))}]]]])
+       [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro :data-centro]]]])
 
 (defn app []
   [:div.todo
