@@ -51,7 +51,6 @@
         (assoc :data-ecuacion-tiempo-extremos (ecu/extremos datos-ecuacion-tiempo)))))
 
 (def ecuaciones (r/atom (calcular-series)))
-(swap! ecuaciones assoc :opacidad 1)
 
 (defn actualizar-serie [ecuacion fase parametro]
   (let [datos-nuevos (calcular-ecuacion ecuacion fase parametro)
@@ -59,14 +58,19 @@
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
     (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
 
-
-(defn actualizar-extremos
+(defn actualizar-extremos-una-serie
   "'data-tipo' es :data-centro o :data-reduccion"
   [data-tipo]
   (let [extremos-nuevos (ecu/extremos (data-tipo @ecuaciones))]
     (-> @ecuaciones
       (assoc (if (= :data-centro data-tipo) :data-centro-extremos :data-reduccion-extremos) extremos-nuevos)
       (assoc :data-ecuacion-tiempo-extremos (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))))
+
+(defn actualizar-extremos []
+  (-> @ecuaciones
+    (assoc :data-centro-extremos (ecu/extremos (:data-centro @ecuaciones)))
+    (assoc :data-reduccion-extremos (ecu/extremos (:data-reduccion @ecuaciones)))
+    (assoc :data-ecuacion-tiempo-extremos (ecu/extremos (:data-ecuacion-tiempo @ecuaciones)))))
 
 (defn getHeightOfElement [e]
   (.-offsetHeight e))
@@ -85,8 +89,8 @@
 (def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
 
 (defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
-  (let [extremo-absoluto-maximo (->> (map (fn [punto] (ecu/abs (:y punto))) data1-extremos)
-                                      (reduce max))]
+  (let [extremo-absoluto-maximo (->> (map (fn [punto] (ecu/abs (:y punto))) (or data1-extremos (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))
+                                     (reduce max))]
     [:> rvis/FlexibleXYPlot
      {:margin {:left 100 :right 50} :xType "time-utc" :yType "time-utc" :yDomain (if (< extremo-absoluto-maximo 100) [-100,100])}
      [:> rvis/VerticalGridLines {:style axis-style}]
@@ -101,34 +105,34 @@
      (if (not= 0 @inclinacion @excentricidad)
       (doall (for [item data1-extremos]
               ^{:key (str "et" (:x item))} [:> rvis/Hint {:value item}
-                                            [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+                                            [:div {:style {:color "#333" :fontWeight "bold"}}
                                                 (ecu/ms->hms (:y item))]])))
      (if (not= 0 @inclinacion)
       (doall (for [item data3-extremos]
               ^{:key (str "re" (:x item))} [:> rvis/Hint {:value item}
-                                            [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+                                            [:div {:style {:color "#333" :fontWeight "bold"}}
                                                   (ecu/ms->hms (:y item))]])))
      (if (not= 0 @excentricidad)
        (doall (for [item data2-extremos]
                ^{:key (str "ec" (:x item))} [:> rvis/Hint {:value item}
-                                             [:div {:style {:color "#333" :fontWeight "bold" :opacity (:opacidad @ecuaciones)}}
+                                             [:div {:style {:color "#333" :fontWeight "bold"}}
                                                  (ecu/ms->hms (:y item))]])))
 
      [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
                           :style line-style}]
      (if (not= 0 @inclinacion @excentricidad)
          [:> rvis/MarkSeries {:data data1-extremos :stroke color1 :size 5
-                              :fill color1 :opacity (:opacidad @ecuaciones)}])
+                              :fill color1}])
      [:> rvis/LineSeries {:data data2 :strokeWidth 2 :stroke color2
                           :style line-style}]
      (if (not= 0 @excentricidad)
          [:> rvis/MarkSeries {:data data2-extremos :stroke color2 :size 3
-                              :fill color2 :opacity (:opacidad @ecuaciones)}])
+                              :fill color2}])
      [:> rvis/LineSeries {:data data3 :strokeWidth 2 :stroke color3
                           :style line-style}]
      (if (not= 0 @inclinacion)
          [:> rvis/MarkSeries {:data data3-extremos :stroke color3 :size 3
-                              :fill color3 :opacity (:opacidad @ecuaciones)}])]))
+                              :fill color3}])]))
 
 (def color-centro "green")
 (def color-proyeccion "blue")
@@ -144,15 +148,14 @@
                (:data-reduccion-extremos @ecuaciones)]])
 
 (defn slider
-  [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion param1 param2 tipo-data]
-  (letfn [(fn-change-end [] (do (reset! ecuaciones (actualizar-extremos tipo-data))
-                                (swap! ecuaciones assoc :opacidad 1)))]
+  [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion param1 param2]
+  (letfn [(fn-change-end [] (reset! ecuaciones (actualizar-extremos)))]
     [:div
      [:label.valor label (if digits (.toFixed (fn-value-label @atom-value) digits) (fn-value-label @atom-value)) label2]
      [:input {:type "range" :value (fn-value-range @atom-value) :min min :max max :step step :id id
               :on-change (fn [e]
                            (let [valor (js/parseFloat (.. e -target -value))]
-                             (swap! ecuaciones assoc :opacidad 0)
+                             (swap! ecuaciones dissoc :data-centro-extremos :data-reduccion-extremos :data-ecuacion-tiempo-extremos)
                              (reset! atom-value (fn-value-2 valor))
                              (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2))))
               :onTouchEnd fn-change-end
@@ -160,24 +163,25 @@
               :onKeyUp fn-change-end}]]))
 
 (defn boton-reset
-  [color param1 param1-default param2 param2-default ecuacion tipo-data]
+  [color param1 param1-default param2 param2-default ecuacion]
   [:input {:type "button" :value "Reset" :style {:color color}
            :on-click (fn [] (reset! param1 param1-default)
                             (reset! param2 param2-default)
                             (reset! ecuaciones (actualizar-serie ecuacion @param2 @param1))
-                            (reset! ecuaciones (actualizar-extremos tipo-data)))}])
+                            (reset! ecuaciones (actualizar-extremos)))}])
+
 (defn sliders []
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
-      [slider "Inclinación: " inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion :data-reduccion]
-      [slider "Equinoccio del punto Vernal: " equinoccio-marzo ecu/getDate false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion :data-reduccion]]
-      [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador :data-reduccion]]
+      [slider "Inclinación: " inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion]
+      [slider "Equinoccio del punto Vernal: " equinoccio-marzo ecu/getDate false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion]]
+      [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador]]
    [:span.medio
      [:span {:style {:color color-centro}}
-       [slider "Excentricidad: " excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad :data-centro]
-       [slider "Perihelio: " perihelio ecu/getDate false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad :data-centro]
-       [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro :data-centro]]]])
+       [slider "Excentricidad: " excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad]
+       [slider "Perihelio: " perihelio ecu/getDate false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad]
+       [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro]]]])
 
 (defn app []
   [:div.todo
