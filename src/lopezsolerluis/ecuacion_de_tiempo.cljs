@@ -144,15 +144,15 @@
                (:data-reduccion-extremos @ecuaciones)]])
 
 (defn slider
-  [label atom-value fn-value digits label2 min max step id fn-value-2 ecuacion param1 tipo-data]
+  [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion param1 param2 tipo-data]
   [:div
-   [:label.valor label (.toFixed (fn-value @atom-value) digits) label2]
-   [:input {:type "range" :defaultValue (fn-value @atom-value) :min min :max max :step step :id id
+   [:label.valor label (if digits (.toFixed (fn-value-label @atom-value) digits) (fn-value-label @atom-value)) label2]
+   [:input {:type "range" :defaultValue (fn-value-range @atom-value) :min min :max max :step step :id id
             :onInput (fn [e]
                        (let [valor (js/parseFloat (.. e -target -value))]
                          (swap! ecuaciones assoc :opacidad 0)
                          (reset! atom-value (fn-value-2 valor))
-                         (reset! ecuaciones (actualizar-serie ecuacion @param1 @atom-value))))
+                         (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2))))
             :onTouchEnd (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
                                 (swap! ecuaciones assoc :opacidad 1))
             :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
@@ -160,45 +160,12 @@
             :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
                              (swap! ecuaciones assoc :opacidad 1))}]])
 
-(defn slider-equinoccio-marzo []
-  [:div
-   [:label.valor "Equinoccio del punto Vernal: " (ecu/getDate @equinoccio-marzo)]
-   [:input {:type "range" :defaultValue @equinoccio-marzo :min 1 :max 365 :step 1 :id "slider-equinoccio-marzo"
-            :onInput (fn [e]
-                       (let [valor (js/parseInt (.. e -target -value))]
-                         (swap! ecuaciones assoc :opacidad 0)
-                         (reset! equinoccio-marzo valor)
-                         (reset! ecuaciones (actualizar-serie ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion))))
-            :onTouchEnd (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
-                                (swap! ecuaciones assoc :opacidad 1))
-            :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
-                               (swap! ecuaciones assoc :opacidad 1))
-            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-reduccion))
-                             (swap! ecuaciones assoc :opacidad 1))}]])
-
-(defn slider-perihelio []
-  [:div
-   [:label.valor "Perihelio: " (ecu/getDate @perihelio)]
-   [:input {:type "range" :defaultValue @perihelio :min 1 :max 365 :step 1 :id "slider-perihelio"
-            :onInput (fn [e]
-                       (let [valor (js/parseInt (.. e -target -value))]
-                         (swap! ecuaciones assoc :opacidad 0)
-                         (reset! perihelio valor)
-                         (reset! ecuaciones (actualizar-serie ecu/ecuacion-de-centro @perihelio @excentricidad))))
-            :onTouchEnd (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
-                                (swap! ecuaciones assoc :opacidad 1))
-            :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
-                               (swap! ecuaciones assoc :opacidad 1))
-            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos :data-centro))
-                             (swap! ecuaciones assoc :opacidad 1))}]])
-
 (defn sliders []
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
-      ;;[slider-inclinacion]
-      [slider "Inclinación: " inclinacion ecu/deg 2 "°" 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo :data-reduccion]
-      [slider-equinoccio-marzo]]
+      [slider "Inclinación: " inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion :data-reduccion]
+      [slider "Equinoccio del punto Vernal: " equinoccio-marzo ecu/getDate false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion :data-reduccion]]
     [:input {:type "button" :value "Reset" :style {:color color-proyeccion}
              :on-click (fn[] (reset! inclinacion inclinacion-terrestre)
                              (reset! equinoccio-marzo equinoccio-marzo-terrestre)
@@ -209,8 +176,9 @@
    [:span.medio
      [:span {:style {:color color-centro}}
        ;;[slider-excentricidad]
-       [slider "Excentricidad: " excentricidad identity 3 "" 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio :data-centro]
-       [slider-perihelio]
+       [slider "Excentricidad: " excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad :data-centro]
+       [slider "Perihelio: " perihelio ecu/getDate false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad :data-centro]
+       ;;[slider-perihelio]
        [:input {:type "button" :value "Reset" :style {:color color-centro}
                 :on-click (fn[] (reset! excentricidad excentricidad-terrestre)
                                 (reset! perihelio perihelio-terrestre)
