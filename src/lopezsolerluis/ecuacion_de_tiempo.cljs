@@ -145,20 +145,19 @@
 
 (defn slider
   [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion param1 param2 tipo-data]
-  [:div
-   [:label.valor label (if digits (.toFixed (fn-value-label @atom-value) digits) (fn-value-label @atom-value)) label2]
-   [:input {:type "range" :defaultValue (fn-value-range @atom-value) :min min :max max :step step :id id
-            :onInput (fn [e]
-                       (let [valor (js/parseFloat (.. e -target -value))]
-                         (swap! ecuaciones assoc :opacidad 0)
-                         (reset! atom-value (fn-value-2 valor))
-                         (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2))))
-            :onTouchEnd (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
-                                (swap! ecuaciones assoc :opacidad 1))
-            :onMouseUp (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
-                               (swap! ecuaciones assoc :opacidad 1))
-            :onKeyUp (fn [_] (reset! ecuaciones (actualizar-extremos tipo-data))
-                             (swap! ecuaciones assoc :opacidad 1))}]])
+  (letfn [(fn-change-end [] (do (reset! ecuaciones (actualizar-extremos tipo-data))
+                                (swap! ecuaciones assoc :opacidad 1)))]
+    [:div
+     [:label.valor label (if digits (.toFixed (fn-value-label @atom-value) digits) (fn-value-label @atom-value)) label2]
+     [:input {:type "range" :value (fn-value-range @atom-value) :min min :max max :step step :id id
+              :on-change (fn [e]
+                           (let [valor (js/parseFloat (.. e -target -value))]
+                             (swap! ecuaciones assoc :opacidad 0)
+                             (reset! atom-value (fn-value-2 valor))
+                             (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2))))
+              :onTouchEnd fn-change-end
+              :onMouseUp fn-change-end
+              :onKeyUp fn-change-end}]]))
 
 (defn sliders []
   [:div.form
