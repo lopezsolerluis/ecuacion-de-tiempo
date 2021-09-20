@@ -9,7 +9,7 @@
 
 (def anio 365.25)
 (def inclinacion-terrestre (ecu/rad 23.5))
-(def excentricidad-terrestre 0.01671)
+(def excentricidad-terrestre 0.017)
 (def equinoccio-marzo-terrestre (ecu/dia-del-anio 21 3))
 (def perihelio-terrestre (ecu/dia-del-anio 4 1))
 (def inclinacion (r/atom inclinacion-terrestre))
@@ -89,10 +89,11 @@
 (def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
 
 (defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
-  (let [extremo-absoluto-maximo (->> (map (fn [punto] (ecu/abs (:y punto))) (or data1-extremos (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))
+  (let [extremo-absoluto-maximo (->> (map (fn [punto] (ecu/abs (:y punto))) (or data1-extremos
+                                                                                (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))
                                      (reduce max))]
     [:> rvis/FlexibleXYPlot
-     {:margin {:left 100 :right 50} :xType "time-utc" :yType "time-utc" :yDomain (if (< extremo-absoluto-maximo 100) [-100,100])}
+     {:margin {:left 100 :right 50 :top 20} :xType "time-utc" :yType "time-utc" :yDomain (if (< extremo-absoluto-maximo 100) [-100,100])}
      [:> rvis/VerticalGridLines {:style axis-style}]
      [:> rvis/HorizontalGridLines {:style axis-style}]
      [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
