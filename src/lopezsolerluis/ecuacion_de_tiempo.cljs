@@ -72,12 +72,6 @@
     (assoc :data-reduccion-extremos (ecu/extremos (:data-reduccion @ecuaciones)))
     (assoc :data-ecuacion-tiempo-extremos (ecu/extremos (:data-ecuacion-tiempo @ecuaciones)))))
 
-(defn getHeightOfElement [e]
-  (.-offsetHeight e))
-
-(defn getWindowHeight []
-  (.-innerHeight js/window))
-
 (defn get-app-element []
   (gdom/getElement "app"))
 
