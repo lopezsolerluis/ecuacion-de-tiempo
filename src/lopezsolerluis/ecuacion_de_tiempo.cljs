@@ -150,12 +150,10 @@
      [:input {:type "range" :value (fn-value-range @atom-value) :min min :max max :step step :id id
               :on-change (fn [e]
                            (let [valor (js/parseFloat (.. e -target -value))]
-                             (swap! ecuaciones dissoc :data-centro-extremos :data-reduccion-extremos :data-ecuacion-tiempo-extremos)
                              (reset! atom-value (fn-value-2 valor))
-                             (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2))))
-              :onTouchEnd fn-change-end
-              :onMouseUp fn-change-end
-              :onKeyUp fn-change-end}]]))
+                             (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2))
+                             (reset! ecuaciones (actualizar-extremos))))
+              }]]))
 
 (defn boton-reset
   [color param1 param1-default param2 param2-default ecuacion]
