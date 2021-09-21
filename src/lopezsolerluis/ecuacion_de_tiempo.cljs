@@ -144,13 +144,16 @@
 
 (defn slider
   [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion param1 param2]
-  (letfn [(fn-change-end [] (reset! ecuaciones (actualizar-extremos)))]
+  (letfn [(fn-change-start [] (swap! ecuaciones dissoc :data-centro-extremos :data-reduccion-extremos :data-ecuacion-tiempo-extremos))
+          (fn-change-end [] (reset! ecuaciones (actualizar-extremos)))]
     [:div
      [:label.valor label (if digits (.toFixed (fn-value-label @atom-value) digits) (fn-value-label @atom-value)) label2]
      [:input {:type "range" :value (fn-value-range @atom-value) :min min :max max :step step :id id
+              :onTouchStart fn-change-start
+              :onMouseDown fn-change-start
+              :onKeyDown fn-change-start
               :on-change (fn [e]
                            (let [valor (js/parseFloat (.. e -target -value))]
-                             (swap! ecuaciones dissoc :data-centro-extremos :data-reduccion-extremos :data-ecuacion-tiempo-extremos)
                              (reset! atom-value (fn-value-2 valor))
                              (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2))))
               :onTouchEnd fn-change-end
