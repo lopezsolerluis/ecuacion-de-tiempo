@@ -95,9 +95,9 @@
      [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
      [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 120 :top 10}
                                    :orientation "vertical"
-                                   :items [{:title " Ecuación de Tiempo" :color color1 :strokeWidth 3}
-                                           {:title " Reducción al Ecuador" :color color3 :strokeWidth 3}
-                                           {:title " Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
+                                   :items [{:title "Ecuación de Tiempo" :color color1 :strokeWidth 3}
+                                           {:title "Reducción al Ecuador" :color color3 :strokeWidth 3}
+                                           {:title "Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
      (if (not= 0 @inclinacion @excentricidad)
       (doall (for [item data1-extremos]
               ^{:key (str "et" (:x item))} [:> rvis/Hint {:value item}
