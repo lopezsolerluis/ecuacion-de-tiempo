@@ -1,6 +1,8 @@
 /* some style */
 * {
   box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
 }
 
 .todo {
@@ -27,6 +29,7 @@
   -ms-flex: 0 0 auto;
   -webkit-flex: 0 0 auto;
   flex: 0 0 auto;
+  margin-bottom: 10px;
   /* background-color: #eaeaea; */
 }
 
