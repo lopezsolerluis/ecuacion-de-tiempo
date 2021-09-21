@@ -87,7 +87,8 @@
                                                                                 (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))
                                      (reduce max))]
     [:> rvis/FlexibleXYPlot
-     {:margin {:left 100 :right 50 :top 20} :xType "time-utc" :yType "time-utc" :yDomain (if (< extremo-absoluto-maximo 100) [-100,100])}
+     {:margin {:left 100 :right 50 :top 20} :xType "time-utc" :yType "time-utc"
+                                                              :yDomain (if (< extremo-absoluto-maximo 100) [-100,100])}
      [:> rvis/VerticalGridLines {:style axis-style}]
      [:> rvis/HorizontalGridLines {:style axis-style}]
      [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
