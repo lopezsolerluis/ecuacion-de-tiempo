@@ -10,10 +10,11 @@
 
 (defn getLanguage []
   (-> (or (.-language js/navigator) (.-userLanguage js/navigator) "en")
-      (subs 0 2)
-      (keyword)))
+      (subs 0 2)))
 
 (def language-selector (gdom/getElement "language"))
+
+(set! (.. language-selector -value) (getLanguage))
 
 (def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
@@ -25,7 +26,7 @@
 (def excentricidad (r/atom excentricidad-terrestre))
 (def perihelio (r/atom perihelio-terrestre))
 (def equinoccio-marzo (r/atom equinoccio-marzo-terrestre))
-(def lang (r/atom (getLanguage)))
+(def lang (r/atom (keyword (getLanguage))))
 
 (defn crear-datos
   ([fun anio]
