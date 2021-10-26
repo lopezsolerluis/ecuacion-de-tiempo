@@ -9,9 +9,11 @@
    [lopezsolerluis.traducciones :as trad :refer [app-tr]]))
 
 (defn getLanguage []
-  (-> (or (.-language js/navigator) (.-userLanguage js/navigator))
+  (-> (or (.-language js/navigator) (.-userLanguage js/navigator) "en")
       (subs 0 2)
       (keyword)))
+
+(def language-selector (gdom/getElement "language"))
 
 (def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
@@ -203,6 +205,11 @@
     (mount el)))
 
 (mount-app-element)
+
+(defn update-language [evt]
+  (reset! lang (.. evt -target -value)))
+
+(gevents/listen language-selector "change" update-language)
 
 ;; specify reload hook with ^;after-load metadata
 (defn ^:after-load on-reload []
