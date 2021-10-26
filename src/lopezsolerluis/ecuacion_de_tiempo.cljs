@@ -19,6 +19,17 @@
 (def excentricidad (r/atom excentricidad-terrestre))
 (def perihelio (r/atom perihelio-terrestre))
 (def equinoccio-marzo (r/atom equinoccio-marzo-terrestre))
+(def lang (r/atom :es))
+
+(defn app-tr
+   "Get a localized resource.
+
+   @param resource Resource keyword.
+   @param params   Optional positional parameters.
+
+   @return translation of `resource` in active user language or a placeholder."
+   [resource & params]
+     (tr {:dict translations} [@lang] [resource] (vec params)))
 
 (defn crear-datos
   ([fun anio]
@@ -98,9 +109,9 @@
      [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
      [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 120 :top 10}
                                    :orientation "vertical"
-                                   :items [{:title "Ecuación de Tiempo" :color color1 :strokeWidth 3}
-                                           {:title "Reducción al Ecuador" :color color3 :strokeWidth 3}
-                                           {:title "Ecuación de Centro"  :color color2 :strokeWidth 3}]}]
+                                   :items [{:title (app-tr :ecuacion-de-tiempo) :color color1 :strokeWidth 3}
+                                           {:title (app-tr :reduccion-al-ecuador) :color color3 :strokeWidth 3}
+                                           {:title (app-tr :ecuacion-de-centro) :color color2 :strokeWidth 3}]}]
      (if (not= 0 @inclinacion @excentricidad)
       (doall (for [item data1-extremos]
               ^{:key (str "et" (:x item))} [:> rvis/Hint {:value item}
@@ -176,13 +187,13 @@
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
-      [slider "Inclinación: " inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]
-      [slider "Equinoccio del punto Vernal: " equinoccio-marzo ecu/getDate false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]]
+      [slider (app-tr :inclinacion) inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]
+      [slider (app-tr :equinoccio-vernal) equinoccio-marzo ecu/getDate false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]]
       [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador anio-tropico]]
    [:span.medio
      [:span {:style {:color color-centro}}
-       [slider "Excentricidad: " excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
-       [slider "Perihelio: " perihelio ecu/getDate false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
+       [slider (app-tr :eccentricidad) excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
+       [slider (app-tr :perihelio) perihelio ecu/getDate false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
        [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro anio-anomalistico]]]])
 
 (defn app []
