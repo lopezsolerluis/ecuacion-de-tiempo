@@ -1,16 +1,16 @@
 (ns lopezsolerluis.traducciones
-  (:require   
+  (:require
    [taoensso.tempura :as tempura :refer [tr]]))
 
 (def translations
   {
    :en {:ecuacion-de-tiempo "Equation of Time"
         :reduccion-al-ecuador "Reduction to the Equator"
-        :ecuacion-de-centro "Equation of Center"
+        :ecuacion-de-centro "Equation of the Center"
         :inclinacion "Inclination: "
         :equinoccio-vernal "Vernal equinox: "
         :eccentricidad "Eccentricity: "
-        :perihelio "Perihelion Date: "
+        :perihelio "Perihelion: "
         :meses (fn [[i]] (get ["January" "Febraury" "March" "April" "May" "June" "July" "August" "September" "October" "November" "December"] i))
         :de "/"
    }
