@@ -3,7 +3,7 @@
 (def translations
   {
    :en {:ecuacion-de-tiempo "Equation of Time"
-        :reduccion-al-ecuador "Reduction to the Ecuator"
+        :reduccion-al-ecuador "Reduction to the Equator"
         :ecuacion-de-centro "Equation of Center"
         :inclinacion "Inclination: "
         :equinoccio-vernal "Vernal equinox: "

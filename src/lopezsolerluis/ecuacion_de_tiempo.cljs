@@ -29,7 +29,7 @@
 
    @return translation of `resource` in active user language or a placeholder."
    [resource & params]
-     (tr {:dict translations} [@lang] [resource] (vec params)))
+     (tr {:dict translations} [@lang :en] [resource] (vec params)))
 
 (defn crear-datos
   ([fun anio]
@@ -105,7 +105,7 @@
                                                               :yDomain (if (< extremo-absoluto-maximo 100) [-100,100])}
      [:> rvis/VerticalGridLines {:style axis-style}]
      [:> rvis/HorizontalGridLines {:style axis-style}]
-     [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes %)}]
+     [:> rvis/XAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat #(ecu/ms->mes @lang %)}]
      [:> rvis/YAxis {:tickSizeInner 0 :tickSizeOuter 6 :style axis-style :tickFormat  #(ecu/ms->hms %)}]
      [:> rvis/DiscreteColorLegend {:style {:position "absolute" :left 120 :top 10}
                                    :orientation "vertical"
@@ -188,12 +188,12 @@
    [:span.medio
     [:span {:style {:color color-proyeccion}}
       [slider (app-tr :inclinacion) inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]
-      [slider (app-tr :equinoccio-vernal) equinoccio-marzo ecu/getDate false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]]
+      [slider (app-tr :equinoccio-vernal) equinoccio-marzo (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]]
       [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador anio-tropico]]
    [:span.medio
      [:span {:style {:color color-centro}}
        [slider (app-tr :eccentricidad) excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
-       [slider (app-tr :perihelio) perihelio ecu/getDate false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
+       [slider (app-tr :perihelio) perihelio (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
        [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro anio-anomalistico]]]])
 
 (defn app []
