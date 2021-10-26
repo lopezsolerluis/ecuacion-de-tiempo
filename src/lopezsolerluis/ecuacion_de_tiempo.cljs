@@ -5,7 +5,9 @@
    [reagent.core :as r]
    [reagent.dom :as rdom]
    [cljsjs.react-vis :as rvis]
-   [lopezsolerluis.ecuaciones :as ecu]))
+   [lopezsolerluis.ecuaciones :as ecu]
+   [taoensso.tempura :as tempura :refer [tr]]
+   [lopezsolerluis.traducciones :as trad :refer [translations]]))
 
 (def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
