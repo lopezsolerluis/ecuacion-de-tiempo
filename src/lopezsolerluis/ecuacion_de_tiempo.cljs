@@ -8,6 +8,11 @@
    [lopezsolerluis.ecuaciones :as ecu]
    [lopezsolerluis.traducciones :as trad :refer [app-tr]]))
 
+(defn getLanguage []
+  (-> (or (.-language js/navigator) (.-userLanguage js/navigator))
+      (subs 0 2)
+      (keyword)))
+
 (def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
 (def inclinacion-terrestre (ecu/rad 23.5))
@@ -18,7 +23,7 @@
 (def excentricidad (r/atom excentricidad-terrestre))
 (def perihelio (r/atom perihelio-terrestre))
 (def equinoccio-marzo (r/atom equinoccio-marzo-terrestre))
-(def lang (r/atom :esl))
+(def lang (r/atom (getLanguage)))
 
 (defn crear-datos
   ([fun anio]
