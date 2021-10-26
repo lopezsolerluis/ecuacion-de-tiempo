@@ -14,7 +14,7 @@
 
 (def language-selector (gdom/getElement "language"))
 
-(set! (.. language-selector -value) (getLanguage))
+(set! (.-value language-selector) (getLanguage))
 
 (def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
