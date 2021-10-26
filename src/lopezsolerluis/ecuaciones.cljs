@@ -1,9 +1,8 @@
 (ns lopezsolerluis.ecuaciones
   (:require
     [goog.string :as gstring]
-    [goog.string.format]
-    [taoensso.tempura :as tempura :refer [tr]]
-    [lopezsolerluis.traducciones :as trad :refer [translations]]))
+    [goog.string.format]    
+    [lopezsolerluis.traducciones :as trad :refer [app-tr]]))
 
 (defn sin [alpha]
   (.sin js/Math alpha))
@@ -66,16 +65,16 @@
   "Recibe un día (de 1 a 365) y devuelve una cadena 'dia de mes'"
   [lang dia]
   (let [fecha (js/Date. 1970 0 dia)
-        mes (tr {:dict translations} [lang :en] [:meses] [(.getMonth fecha)])
+        mes (app-tr lang :meses (.getMonth fecha))
         dia (.getDate fecha)]
-   (str dia (tr {:dict translations} [lang :en] [:de]) mes)))
+    (str dia (app-tr lang :de) mes)))
 
 (defn ms->mes
   "Recibe un día en milisegundos desde el 1 de Enero y devuelve una cadena 'mes'"
   [lang ms]
   (let [dia (/ ms 86400000)
         fecha (js/Date. 1970 0 (inc dia))]
-    (tr {:dict translations} [lang :es] [:meses] [(.getMonth fecha)])))
+    (app-tr lang :meses (.getMonth fecha))))
 
 (defn dia->ms [d]
   (* d 86400000)) ;; 1 día son 86400000 milisegundos

@@ -1,4 +1,6 @@
-(ns lopezsolerluis.traducciones)
+(ns lopezsolerluis.traducciones
+  (:require   
+   [taoensso.tempura :as tempura :refer [tr]]))
 
 (def translations
   {
@@ -23,3 +25,13 @@
         :de " de "
    }
   })
+
+  (defn app-tr
+     "Get a localized resource.
+
+     @param resource Resource keyword.
+     @param params   Optional positional parameters.
+
+     @return translation of `resource` in active user language or a placeholder."
+     [lang resource & params]
+       (tr {:dict translations} [lang :en] [resource] (vec params)))
