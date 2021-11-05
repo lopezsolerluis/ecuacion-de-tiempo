@@ -55,20 +55,20 @@
                              anomalia-v)))
     34.026714 0.8502196 94.163310))
 
-(deftest ecuacion-de-centro-test
-  (are [anomalia-media excentricidad resultado]
-      ; (>= tolerancia (abs (- (to-deg (ecuacion-de-centro (to-rad anomalia-media) excentricidad))
-      ;                        resultado)))
-      (= (to-deg (ecuacion-de-centro (to-rad anomalia-media) excentricidad)) resultado)
-      0 .99 0))
+; (deftest ecuacion-de-centro-test
+;   (are [anomalia-media excentricidad resultado]
+;       ; (>= tolerancia (abs (- (to-deg (ecuacion-de-centro (to-rad anomalia-media) excentricidad))
+;       ;                        resultado)))
+;       (= (to-deg (ecuacion-de-centro (to-rad anomalia-media) excentricidad)) resultado)
+;       0 .99 0))
 
-(deftest reduccion-al-ecuador-test
-  (are [longitud-ecliptica inclinacion resultado]
-      ; (>= tolerancia (abs (- (to-deg (reduccion-al-ecuador (to-rad anomalia-media) excentricidad))
-      ;                        resultado)))
-      (= (to-deg (reduccion-al-ecuador (to-rad longitud-ecliptica) (to-rad inclinacion))) resultado)
-      270 23 0))
-
+; (deftest reduccion-al-ecuador-test
+;   (are [longitud-ecliptica inclinacion resultado]
+;       ; (>= tolerancia (abs (- (to-deg (reduccion-al-ecuador (to-rad anomalia-media) excentricidad))
+;       ;                        resultado)))
+;       (= (to-deg (reduccion-al-ecuador (to-rad longitud-ecliptica) (to-rad inclinacion))) resultado)
+;       270 23 0))
+ 
 (deftest inflexion?-test
   (are [previos actual resultado]
     (= (inflexion? previos actual) resultado)

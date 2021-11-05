@@ -1,7 +1,7 @@
 (ns lopezsolerluis.ecuaciones
   (:require
     [goog.string :as gstring]
-    [goog.string.format]    
+    [goog.string.format]
     [lopezsolerluis.traducciones :as trad :refer [app-tr]]))
 
 (defn sin [alpha]
@@ -128,10 +128,11 @@
                                                   (tan (/ anomalia-excentrica 2)))))]
     (mod-2pi anomalia-verdadera-radianes)))
 
-(defn ecuacion-de-centro [anomalia-media excentricidad]
+(defn ecuacion-de-centro [dia anio perihelio excentricidad perihelio excentricidad]
   "'anomalia-media' debe estar en radianes.
   El resultado está en milisegundos"
-  (let [anomalia-excentrica (ecuacion-de-kepler anomalia-media excentricidad)
+  (let [anomalia-media (anomalia-media (- dia perihelio) anio)
+        anomalia-excentrica (ecuacion-de-kepler anomalia-media excentricidad)
         anomalia-verdadera (anomalia-verdadera anomalia-excentrica excentricidad)]
      (rad->ms (- anomalia-media anomalia-verdadera))))
 
@@ -141,16 +142,22 @@
   (mod-2pi (atan (* (sin longitud-ecliptica) (cos inclinacion))
                  (cos longitud-ecliptica))))
 
-(defn reduccion-al-ecuador [longitud-ecliptica inclinacion]
-  "'longitud-ecliptica' e 'inclinacion' deben estar en radianes.
+(defn reduccion-al-ecuador [dia anio equinoccio inclinacion perihelio excentricidad]
+  "'inclinacion' debe estar en radianes.
   El resultado está en milisegundos"
-  (let [proyeccion (proyeccion-al-ecuador longitud-ecliptica inclinacion)]
-    (rad->ms (- longitud-ecliptica proyeccion))))
+  ;(js/console.log dia anio equinoccio inclinacion perihelio excentricidad)
+  (let [anomalia-media-1 (anomalia-media (- dia perihelio) anio)
+        anomalia-excentrica (ecuacion-de-kepler anomalia-media-1 excentricidad)
+        anomalia-verdadera (anomalia-verdadera anomalia-excentrica excentricidad)
+        anomalia-punto-vernal (anomalia-media (- equinoccio perihelio) anio)
+        lambda (- anomalia-verdadera anomalia-punto-vernal)
+        proyeccion (proyeccion-al-ecuador lambda inclinacion)]
+    (rad->ms (- lambda proyeccion))))
 
-(defn ecuacion-de-tiempo
-  [dia anio inclinacion excentricidad dia-vernal dia-perihelio]
-  (let [anom-med (anomalia-media (- dia dia-perihelio) anio)
-        longitud (anomalia-media (- dia dia-vernal) anio)
-        e-centro (ecuacion-de-centro anom-med excentricidad)
-        r-ecuador (reduccion-al-ecuador longitud inclinacion)]
-    (rad->ms (+ e-centro r-ecuador))))
+; (defn ecuacion-de-tiempo
+;   [dia anio inclinacion excentricidad dia-vernal dia-perihelio]
+;   (let [anom-med (anomalia-media (- dia dia-perihelio) anio)
+;         longitud (anomalia-media (- dia dia-vernal) anio)
+;         e-centro (ecuacion-de-centro anom-med excentricidad)
+;         r-ecuador (reduccion-al-ecuador longitud inclinacion)]
+;     (rad->ms (+ e-centro r-ecuador))))

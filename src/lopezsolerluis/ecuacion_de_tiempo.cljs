@@ -16,8 +16,9 @@
 
 (set! (.-value language-selector) (getLanguage))
 
-(def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
+(def anio-tropico 365.259635)
+;; (def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def inclinacion-terrestre (ecu/rad 23.5))
 (def excentricidad-terrestre 0.017)
 (def equinoccio-marzo-terrestre (ecu/dia-del-anio 21 3))
@@ -45,8 +46,7 @@
         datos-centro datos-reduccion))
 
 (defn calcular-ecuacion [ecuacion fase parametro anio]
-  (crear-datos (fn [t] (-> (ecu/anomalia-media (- t fase -1) anio)
-                           (ecuacion parametro)))
+  (crear-datos (fn [dia] (ecuacion dia anio fase parametro @perihelio @excentricidad))
                anio))
 
 (defn calcular-series []
