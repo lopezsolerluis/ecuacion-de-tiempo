@@ -17,7 +17,7 @@
 
 (set! (.-value language-selector) (getLanguage))
 
-(def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
+;(def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
 (def inclinacion-terrestre (math/rad 23.5))
 (def excentricidad-terrestre 0.017)
@@ -40,19 +40,18 @@
             {:x (ecu/dia->ms tt) :y (fun tt)}))
        (range (dec (/ anio delta-t))))))
 
+(defn calcular-ecuacion [ecuacion]
+  (crear-datos (fn [dia] (ecuacion dia anio-anomalistico @perihelio @excentricidad @equinoccio-marzo @inclinacion))
+                      anio-anomalistico))
+
 (defn calcular-ecuacion-tiempo [datos-centro datos-reduccion]
   (mapv (fn [{x1 :x y1 :y} {x2 :x y2 :y}]
             {:x x1 :y (+ y1 y2)})
         datos-centro datos-reduccion))
 
-(defn calcular-ecuacion [ecuacion fase parametro anio]
-  (crear-datos (fn [t] (-> (ecu/anomalia-media (- t fase -1) anio)
-                           (ecuacion parametro)))
-               anio))
-
 (defn calcular-series []
-  (let [datos-centro (calcular-ecuacion ecu/ecuacion-de-centro @perihelio @excentricidad anio-anomalistico)
-        datos-reduccion (calcular-ecuacion ecu/reduccion-al-ecuador @equinoccio-marzo @inclinacion anio-tropico)
+  (let [datos-centro (calcular-ecuacion ecu/ecuacion-de-centro)
+        datos-reduccion (calcular-ecuacion ecu/reduccion-al-ecuador)
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo datos-centro datos-reduccion)]
     (-> {}
         (assoc :data-centro datos-centro)
@@ -64,8 +63,8 @@
 
 (def ecuaciones (r/atom (calcular-series)))
 
-(defn actualizar-serie [ecuacion fase parametro anio]
-  (let [datos-nuevos (calcular-ecuacion ecuacion fase parametro anio)
+(defn actualizar-serie [ecuacion]
+  (let [datos-nuevos (calcular-ecuacion ecuacion)
         ecuaciones-nuevas (assoc @ecuaciones (if (= ecu/ecuacion-de-centro ecuacion) :data-centro :data-reduccion) datos-nuevos)
         datos-ecuacion-tiempo (calcular-ecuacion-tiempo (:data-centro ecuaciones-nuevas) (:data-reduccion ecuaciones-nuevas))]
     (assoc ecuaciones-nuevas :data-ecuacion-tiempo datos-ecuacion-tiempo)))
@@ -148,15 +147,15 @@
 
 (defn graph []
   [:div.graph
-   [line-chart [(:data-ecuacion-tiempo @ecuaciones) color-ecuacion-tiempo]
-               (:data-ecuacion-tiempo-extremos @ecuaciones)
+   [line-chart ;[(:data-ecuacion-tiempo @ecuaciones) color-ecuacion-tiempo]
+               ;(:data-ecuacion-tiempo-extremos @ecuaciones)
                [(:data-centro @ecuaciones) color-centro]
-               (:data-centro-extremos @ecuaciones)
-               [(:data-reduccion @ecuaciones) color-proyeccion]
-               (:data-reduccion-extremos @ecuaciones)]])
+               (:data-centro-extremos @ecuaciones)]])
+            ;   [(:data-reduccion @ecuaciones) color-proyeccion]
+            ;   (:data-reduccion-extremos @ecuaciones)]])
 
 (defn slider
-  [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion param1 param2 anio]
+  [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion]
   (letfn [(fn-change-start [] (swap! ecuaciones dissoc :data-centro-extremos :data-reduccion-extremos :data-ecuacion-tiempo-extremos))
           (fn-change-end [] (reset! ecuaciones (actualizar-extremos)))]
     [:div
@@ -168,31 +167,31 @@
               :on-change (fn [e]
                            (let [valor (js/parseFloat (.. e -target -value))]
                              (reset! atom-value (fn-value-2 valor))
-                             (reset! ecuaciones (actualizar-serie ecuacion @param1 @param2 anio))))
+                             (reset! ecuaciones (actualizar-serie ecuacion))))
               :onTouchEnd fn-change-end
               :onMouseUp fn-change-end
               :onKeyUp fn-change-end}]]))
 
 (defn boton-reset
-  [color param1 param1-default param2 param2-default ecuacion anio]
+  [color param1 param1-default param2 param2-default ecuacion]
   [:input {:type "button" :value "Reset" :style {:color color}
            :on-click (fn [] (reset! param1 param1-default)
                             (reset! param2 param2-default)
-                            (reset! ecuaciones (actualizar-serie ecuacion @param2 @param1 anio))
+                            (reset! ecuaciones (actualizar-serie ecuacion))
                             (reset! ecuaciones (actualizar-extremos)))}])
 
 (defn sliders []
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
-      [slider (app-tr @lang :inclinacion) inclinacion math/deg 2 "°" math/deg 0 89.99 0.01 "slider-inclinacion" math/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]
-      [slider (app-tr @lang :equinoccio-vernal) equinoccio-marzo (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]]
-      [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador anio-tropico]]
+      [slider (app-tr @lang :inclinacion) inclinacion math/deg 2 "°" math/deg 0 89.99 0.01 "slider-inclinacion" math/rad ecu/reduccion-al-ecuador]
+      [slider (app-tr @lang :equinoccio-vernal) equinoccio-marzo (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador]]
+      [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador]]
    [:span.medio
      [:span {:style {:color color-centro}}
-       [slider (app-tr @lang :eccentricidad) excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
-       [slider (app-tr @lang :perihelio) perihelio (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro perihelio excentricidad anio-anomalistico]
-       [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro anio-anomalistico]]]])
+       [slider (app-tr @lang :eccentricidad) excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro]
+       [slider (app-tr @lang :perihelio) perihelio (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro]
+       [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro]]]])
 
 (defn app []
   [:div.todo

@@ -24,7 +24,7 @@
 
 (def pi (.-PI js/Math))
 
-(def two-pi (* 2 pi))
+(def pi2 (* 2 pi))
 
 (defn rad [n] (* n pi (/ 180)))
 (defn deg [n] (* n 180 (/ pi)))
