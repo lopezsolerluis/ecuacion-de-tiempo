@@ -80,7 +80,7 @@
          (+ anomalia-media (* excentricidad (math/sin anomalia-excentrica)))]
      (if (<= (math/abs (- anomalia-excentrica nueva-anomalia-excentrica))
              tolerancia)
-       nueva-anomalia-excentrica
+       (mod-2pi nueva-anomalia-excentrica)
        (recur anomalia-media excentricidad tolerancia nueva-anomalia-excentrica)))))
 
 (defn anomalia-verdadera [anomalia-media excentricidad]
@@ -109,6 +109,11 @@
   (let [anomalia-m (anomalia-media dia perihelio anio)
         anomalia-v (anomalia-verdadera anomalia-m excentricidad)
         longitud-punto-vernal (anomalia-media equinoccio perihelio anio)
-        longitud-ecliptica (- anomalia-v longitud-punto-vernal)
+        longitud-ecliptica (mod-2pi (- anomalia-v longitud-punto-vernal))
         proyeccion (proyeccion-al-ecuador longitud-ecliptica inclinacion)]
     (rad->ms (- longitud-ecliptica proyeccion))))
+
+(def ex 0.017)
+(def incl (math/rad 23.5))
+(def per (dia-del-anio 4 1))
+(def equi (dia-del-anio 21 3))

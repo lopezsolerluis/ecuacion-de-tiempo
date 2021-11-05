@@ -124,7 +124,6 @@
                ^{:key (str "ec" (:x item))} [:> rvis/Hint {:value item}
                                              [:div {:style {:color "#333" :fontWeight "bold"}}
                                                  (ecu/ms->hms (:y item))]])))
-
      [:> rvis/LineSeries {:data data1 :strokeWidth 5 :stroke color1
                           :style line-style}]
      (if (not= 0 @inclinacion @excentricidad)
@@ -147,12 +146,12 @@
 
 (defn graph []
   [:div.graph
-   [line-chart ;[(:data-ecuacion-tiempo @ecuaciones) color-ecuacion-tiempo]
-               ;(:data-ecuacion-tiempo-extremos @ecuaciones)
+   [line-chart [(:data-ecuacion-tiempo @ecuaciones) color-ecuacion-tiempo]
+               (:data-ecuacion-tiempo-extremos @ecuaciones)
                [(:data-centro @ecuaciones) color-centro]
-               (:data-centro-extremos @ecuaciones)]])
-            ;   [(:data-reduccion @ecuaciones) color-proyeccion]
-            ;   (:data-reduccion-extremos @ecuaciones)]])
+               (:data-centro-extremos @ecuaciones)
+               [(:data-reduccion @ecuaciones) color-proyeccion]
+               (:data-reduccion-extremos @ecuaciones)]])
 
 (defn slider
   [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion]
