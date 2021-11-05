@@ -41,7 +41,7 @@
        (range (dec (/ anio delta-t))))))
 
 (defn calcular-ecuacion [ecuacion]
-  (crear-datos (fn [dia] (ecuacion dia anio-anomalistico @perihelio @excentricidad @equinoccio-marzo @inclinacion))
+  (crear-datos (fn [dia] (ecuacion (inc dia) anio-anomalistico @perihelio @excentricidad @equinoccio-marzo @inclinacion))
                       anio-anomalistico))
 
 (defn calcular-ecuacion-tiempo [datos-centro datos-reduccion]
