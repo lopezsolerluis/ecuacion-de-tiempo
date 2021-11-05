@@ -166,7 +166,7 @@
               :on-change (fn [e]
                            (let [valor (js/parseFloat (.. e -target -value))]
                              (reset! atom-value (fn-value-2 valor))
-                             (reset! ecuaciones (actualizar-serie ecuacion))))
+                             (reset! ecuaciones (calcular-series))))
               :onTouchEnd fn-change-end
               :onMouseUp fn-change-end
               :onKeyUp fn-change-end}]]))
@@ -176,7 +176,7 @@
   [:input {:type "button" :value "Reset" :style {:color color}
            :on-click (fn [] (reset! param1 param1-default)
                             (reset! param2 param2-default)
-                            (reset! ecuaciones (actualizar-serie ecuacion))
+                            (reset! ecuaciones (calcular-series))
                             (reset! ecuaciones (actualizar-extremos)))}])
 
 (defn sliders []
