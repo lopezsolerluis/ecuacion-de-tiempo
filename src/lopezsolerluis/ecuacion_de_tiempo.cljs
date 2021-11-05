@@ -154,7 +154,7 @@
                (:data-reduccion-extremos @ecuaciones)]])
 
 (defn slider
-  [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2 ecuacion]
+  [label atom-value fn-value-label digits label2 fn-value-range min max step id fn-value-2]
   (letfn [(fn-change-start [] (swap! ecuaciones dissoc :data-centro-extremos :data-reduccion-extremos :data-ecuacion-tiempo-extremos))
           (fn-change-end [] (reset! ecuaciones (actualizar-extremos)))]
     [:div
@@ -172,7 +172,7 @@
               :onKeyUp fn-change-end}]]))
 
 (defn boton-reset
-  [color param1 param1-default param2 param2-default ecuacion]
+  [color param1 param1-default param2 param2-default]
   [:input {:type "button" :value "Reset" :style {:color color}
            :on-click (fn [] (reset! param1 param1-default)
                             (reset! param2 param2-default)
@@ -183,14 +183,14 @@
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
-      [slider (app-tr @lang :inclinacion) inclinacion math/deg 2 "°" math/deg 0 89.99 0.01 "slider-inclinacion" math/rad ecu/reduccion-al-ecuador]
-      [slider (app-tr @lang :equinoccio-vernal) equinoccio-marzo (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador]]
-      [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador]]
+      [slider (app-tr @lang :inclinacion) inclinacion math/deg 2 "°" math/deg 0 89.99 0.01 "slider-inclinacion" math/rad]
+      [slider (app-tr @lang :equinoccio-vernal) equinoccio-marzo (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-equinoccio-marzo" identity]]
+      [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre]]
    [:span.medio
      [:span {:style {:color color-centro}}
-       [slider (app-tr @lang :eccentricidad) excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity ecu/ecuacion-de-centro]
-       [slider (app-tr @lang :perihelio) perihelio (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-perihelio" identity ecu/ecuacion-de-centro]
-       [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre ecu/ecuacion-de-centro]]]])
+       [slider (app-tr @lang :eccentricidad) excentricidad identity 3 "" identity 0 0.999 0.001 "slider-excentricidad" identity]
+       [slider (app-tr @lang :perihelio) perihelio (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-perihelio" identity]
+       [boton-reset color-centro excentricidad excentricidad-terrestre perihelio perihelio-terrestre]]]])
 
 (defn app []
   [:div.todo
