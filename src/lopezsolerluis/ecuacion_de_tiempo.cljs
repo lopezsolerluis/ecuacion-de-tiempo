@@ -5,6 +5,7 @@
    [reagent.core :as r]
    [reagent.dom :as rdom]
    [cljsjs.react-vis :as rvis]
+   [lopezsolerluis.math :as math]
    [lopezsolerluis.ecuaciones :as ecu]
    [lopezsolerluis.traducciones :as trad :refer [app-tr]]))
 
@@ -18,7 +19,7 @@
 
 (def anio-tropico 365.24219) ; https://scienceworld.wolfram.com/astronomy/TropicalYear.html
 (def anio-anomalistico 365.259635) ; https://scienceworld.wolfram.com/astronomy/AnomalisticYear.html
-(def inclinacion-terrestre (ecu/rad 23.5))
+(def inclinacion-terrestre (math/rad 23.5))
 (def excentricidad-terrestre 0.017)
 (def equinoccio-marzo-terrestre (ecu/dia-del-anio 21 3))
 (def perihelio-terrestre (ecu/dia-del-anio 4 1))
@@ -94,8 +95,8 @@
 (def line-style {:fill "none" :strokeLinejoin "round" :strokeLinecap "round"})
 
 (defn line-chart [[data1 color1] data1-extremos [data2 color2] data2-extremos [data3 color3] data3-extremos]
-  (let [extremo-absoluto-maximo (->> (map (fn [punto] (ecu/abs (:y punto))) (or data1-extremos
-                                                                                (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))
+  (let [extremo-absoluto-maximo (->> (map (fn [punto] (math/abs (:y punto))) (or data1-extremos
+                                                                                 (ecu/extremos (:data-ecuacion-tiempo @ecuaciones))))
                                      (reduce max))]
     [:> rvis/FlexibleXYPlot
      {:margin {:left 100 :right 50 :top 20} :xType "time-utc" :yType "time-utc"
@@ -184,7 +185,7 @@
   [:div.form
    [:span.medio
     [:span {:style {:color color-proyeccion}}
-      [slider (app-tr @lang :inclinacion) inclinacion ecu/deg 2 "°" ecu/deg 0 89.99 0.01 "slider-inclinacion" ecu/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]
+      [slider (app-tr @lang :inclinacion) inclinacion math/deg 2 "°" math/deg 0 89.99 0.01 "slider-inclinacion" math/rad ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]
       [slider (app-tr @lang :equinoccio-vernal) equinoccio-marzo (partial ecu/getDate @lang) false "" identity 1 365 1 "slider-equinoccio-marzo" identity ecu/reduccion-al-ecuador equinoccio-marzo inclinacion anio-tropico]]
       [boton-reset color-proyeccion inclinacion inclinacion-terrestre equinoccio-marzo equinoccio-marzo-terrestre ecu/reduccion-al-ecuador anio-tropico]]
    [:span.medio
