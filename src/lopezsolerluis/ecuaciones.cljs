@@ -83,13 +83,18 @@
        (mod-2pi nueva-anomalia-excentrica)
        (recur anomalia-media excentricidad tolerancia nueva-anomalia-excentrica)))))
 
-(defn anomalia-verdadera [anomalia-media excentricidad]
-  "'anomalia-media' debe estar en radianes.
-   El resultado está en radianes"
-  (let [anomalia-e (ecuacion-de-kepler anomalia-media excentricidad)
-        anomalia-v (* 2 (math/atan (* (math/sqrt (/ (+ 1 excentricidad) (- 1 excentricidad)))
-                                                       (math/tan (/ anomalia-e 2)))))]
-    (mod-2pi anomalia-v)))
+(defn anomalia-verdadera
+  ([anomalia-media excentricidad]
+    "'anomalia-media' debe estar en radianes.
+    El resultado está en radianes"
+    (let [anomalia-e (ecuacion-de-kepler anomalia-media excentricidad)
+          anomalia-v (* 2 (math/atan (* (math/sqrt (/ (+ 1 excentricidad) (- 1 excentricidad)))
+                                        (math/tan (/ anomalia-e 2)))))]
+      (mod-2pi anomalia-v)))
+  ([dia perihelio anio excentricidad]
+    "El resultado está en radianes"
+    (let [anomalia-m (anomalia-media dia perihelio anio)]
+      (anomalia-verdadera anomalia-m excentricidad))))
 
 (defn ecuacion-de-centro [dia anio perihelio excentricidad _ _]
   "El resultado está en milisegundos"
@@ -106,10 +111,9 @@
 (defn reduccion-al-ecuador [dia anio perihelio excentricidad equinoccio inclinacion]
   "inclinacion' debe estar en radianes.
   El resultado está en milisegundos"
-  (let [anomalia-m (anomalia-media dia perihelio anio)
-        anomalia-v (anomalia-verdadera anomalia-m excentricidad)
-        longitud-punto-vernal (anomalia-media equinoccio perihelio anio)
-        longitud-ecliptica (mod-2pi (- anomalia-v longitud-punto-vernal))
+  (let [anomalia-v (anomalia-verdadera dia perihelio anio excentricidad)
+        anomalia-v-equinoccio (anomalia-verdadera equinoccio perihelio anio excentricidad)
+        longitud-ecliptica (mod-2pi (- anomalia-v anomalia-v-equinoccio))
         proyeccion (proyeccion-al-ecuador longitud-ecliptica inclinacion)]
     (rad->ms (- longitud-ecliptica proyeccion))))
 
