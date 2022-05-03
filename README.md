@@ -4,7 +4,7 @@ Displays the **Equation of Time** for arbitrary values of orbital inclination an
 
 Try it at <https://lopezsolerluis.github.io/ecuacion-de-tiempo/publicado/>
 
-![Captura de pantalla](https://github.com/lopezsolerluis/ecuacion-de-tiempo/blob/main/resources/public/captura.png?raw=true)
+![Captura de pantalla](https://github.com/lopezsolerluis/ecuacion-de-tiempo/blob/resources/public/captura.png?raw=true)
 
 ## Contact
 
